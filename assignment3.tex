@@ -1,0 +1,340 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{float}
+
+\title{34MLS\\Machine Learning in Science\\Final individual assignment\\Flow field through a porous media}
+\author{Teacher: dr.\ A.\ Corbetta (\texttt{a.corbetta@tue.nl})}
+\date{Deadline: 11-04-2026 23:59}
+
+\begin{document}
+
+\maketitle
+
+This is an individual assignment. Although we encourage discussions among students, usual rules on plagiarism hold. Reports/codes uploaded on Canvas must follow the template provided and must state the following in the beginning: student's name and id. The Kaggle id should contain name and surname of the student.
+
+The report is expected in \texttt{.pdf} format and follow the IEEE-like template available. The code as a Jupyter notebook should be uploaded both as \texttt{.ipynb} and \texttt{.pdf}. In case any of these is missing, the final grade will be reduced by \(0.5/10\). See more details below.
+
+\section{Introduction}
+
+We consider the laminar flow of a viscous fluid through a porous medium, like a ``sponge''. The porous medium extends along the interior of a long channel (length \(L\), \([\mathrm{m}]\)). The fluid moves under the action of a pressure drop \((\Delta P,\ [\mathrm{Pa}])\). An example system is sketched in Figure~\ref{fig:flow-system}.
+
+The objective of this assignment is to predict in a data-driven way flow rate fields,
+\[
+q = q(x,y),
+\]
+through given cross sections, respecting all the symmetries of the problem. The flow rate field has the physical dimensions of a velocity \([\mathrm{m\,s^{-1}}]\) and examples of such fields are reported in Figure~\ref{fig:flow-system}.
+
+The cross-sections of the porous media considered come in a wide variety of shapes within a rectangular frame (cf.\ Figure~\ref{fig:cross-sections}). We represent cross sections with binary \(N_X \times N_Y = 32 \times 64\) images (pixels have area \(\Delta A = \Delta x \Delta y\ [\mathrm{m}^2]\)). Here, a pixel in location\footnote{The indices \(i,j\) parametrize the pixel location: \(i \in \{1,\dots,N_X\}\), \(j \in \{1,\dots,N_Y\}\).} \((\Delta x_i,\Delta y_j)\) can be either
+\begin{itemize}
+    \item open (pixel value \(=1\)) if the fluid can flow through it, or
+    \item closed (pixel value \(=0\)) if it is impermeable to the flow.
+\end{itemize}
+
+The aim is therefore to design and train a feed-forward neural network that accurately predicts the transversal flow rate field,
+\[
+q(x_i,y_j)\ [\mathrm{m\,s^{-1}}],
+\]
+on the same \(32 \times 64\) grid. Together with the cross section, the flow rate field is determined by an interplay of the following parameters (listed with SI units):
+\begin{itemize}
+    \item the pressure drop \(\Delta P\) over the channel \([\mathrm{Pa}]\),
+    \item the length \(L\) of the channel \([\mathrm{m}]\),
+    \item the fluid viscosity \(\mu\) \([\mathrm{Pa\cdot s}]\),
+    \item the area \(\Delta A = \Delta x \Delta y\) of individual pixels in the binary image \([\mathrm{m}^2]\).
+\end{itemize}
+
+Note that the overall flow per second through the porous medium, \(Q\ [\mathrm{m^3\,s^{-1}}]\), relates to the flow field \(q\) as
+\begin{equation}
+Q = \sum_{ij} q(x_i,y_j)\,\Delta A .
+\end{equation}
+
+For training, you are provided with a total of 1500 binary images, the associated parameters \((\Delta A,L,\mu,\Delta P)\), and the related flow rate field \(q\).
+
+As usual, your model performance will be evaluated through a Kaggle competition. Therefore, you are also provided with 500 binary images and related \((\Delta A,L,\mu,\Delta P)\) for which the individual \(q\) fields are kept hidden (the test data).
+
+The Kaggle competition considers the following relative error-based loss
+\begin{equation}
+E
+=
+\frac{1}{|\mathrm{dataset}|}
+\sum_{i \in \mathrm{dataset}}
+\frac{1}{N_X N_Y}
+\sum_{xy}
+\left|
+\frac{q_i^T(x,y)-q_i(x,y)}{q_i^T(x,y)+\epsilon}
+\right|,
+\end{equation}
+where \(q_i(x,y)\) is the predicted flow rate value of the \(i\)-th datapoint at pixel location \((x,y)\), \(q_i^T(x,y)\) is the corresponding ground truth value and \(\epsilon\) prevents division by zero.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{figure1.png}
+    \caption{Pressure driven flow through a porous media; the panel on the bottom left shows an example of a section of the domain. The color map represents the magnitude of the flow rate.}
+    \label{fig:flow-system}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{figure2.png}
+    \caption{Examples of cross-sections. In the top row you are given examples of the binary matrices, with ``open'' (\(=1\)) and ``closed'' (\(=0\)) pixels. The bottom row shows the corresponding flow profile.}
+    \label{fig:cross-sections}
+\end{figure}
+
+\subsection*{Kaggle competition links}
+
+\begin{itemize}
+    \item Competition link: \url{https://www.kaggle.com/competitions/flow-field-through-a-porous-media-25-26}
+    \item Private key: \url{https://www.kaggle.com/t/62505f78cf8a4dd1a7b4970eafeaf65a}
+\end{itemize}
+
+\section{Deliverables}
+
+Working individually you are expected to deliver the following by the deadline 11-04-2026 23:59:
+\begin{itemize}
+    \item A report, in paper format (\texttt{.pdf}), of maximum 6 pages and following the provided IEEE template. \url{https://www.overleaf.com/read/fspnzvzrsgyh#3f5dd8}
+
+    Click on ``Menu'' \(\rightarrow\) ``Copy project'' to copy the template in your personal Overleaf directory.
+
+    The report should contextualize the problem with a brief introduction. Subsequently, it should report on the theory, formal derivations, and salient parts of codes following the guidelines below. A short conclusion and bibliographic references should also be included. The report should be self-standing (a peer that did not read this instructions document should be able to read and understand it), yet can point to the appendix for additional content.
+
+    \item A Jupyter notebook serving as an appendix, including the complete code (both as \texttt{.ipynb} and \texttt{.pdf}).
+
+    \item Participation in the Kaggle competition with at least one submission. Note that the performance of the model in the competition will determine part of the score.
+
+    \item Late submissions will be penalized.
+\end{itemize}
+
+\section{Kaggle Information}
+
+This section explains the format of the training and hidden dataset data that can be found on Kaggle, as well as the expected format of the submission.
+
+\subsection{Dataset files}
+
+The training dataset is split over the following files:
+\begin{itemize}
+    \item \texttt{train\_inputs.npy} --- training binary matrices.\\
+    Load as \texttt{train\_crosssections = np.load("train\_inputs.npy")}\\
+    Shape: \([N,32,64]\), where \(N\) is the number of samples.
+
+    \item \texttt{train\_params.csv} --- training associated parameters \((\Delta A,L,\mu,\Delta P)\)\\
+    Load as \texttt{train\_parameters = pd.read\_csv("train\_params.csv")}\\
+    This dataframe has \(N\) and 4 data columns (5 including the identifier):
+    \begin{itemize}
+        \item \texttt{id} --- identifier,
+        \item \texttt{delta\_p} --- pressure drop over the channel \((\Delta P)\),
+        \item \texttt{L} --- length of the channel,
+        \item \texttt{visc} --- fluid viscosity \((\mu)\),
+        \item \texttt{delta\_A} --- area of individual pixels \((\Delta A)\).
+    \end{itemize}
+
+    \item \texttt{train\_labels.npy} --- training ground truth flow profiles \(q(x_i,y_i)\).\\
+    Load as \texttt{train\_labels = np.load("train\_labels.npy")}\\
+    Shape: \([N,32,64]\).
+\end{itemize}
+
+Use the hidden dataset and predict the related flow field to take part in Kaggle. The hidden dataset includes the following files that can be loaded analogously to the training case:
+\begin{itemize}
+    \item \texttt{hidden\_test\_inputs.npy} --- the secret test binary matrices.
+    \item \texttt{hidden\_test\_params.csv} --- the secret test associated parameters \((\Delta A,L,\mu,\Delta P)\).
+\end{itemize}
+
+\noindent\textbf{NOTE:} The order of the images corresponds to the \texttt{id} column of the associated parameters csv file.
+
+\subsection{Submission Format}
+
+In this assignment, we are no longer predicting a single value for each id; instead we predict the entire matrix of the flow profile \(q_{i,j} = q(x_i,y_i)\). Kaggle only accepts submissions following a tabular (table-like) format, consequently we have to flatten each flow profile matrix into a 1-dimensional array. This shall generate a tabular file (example in Table~\ref{tab:submission}) that has as many rows as the number of samples in the hidden set, and \(N_X \times N_Y = 2048\) columns plus the \texttt{id} column.
+
+\medskip
+\noindent\textbf{Note:} Ensure that the \texttt{id} are in integer format. Specifically, the id should be in the format \texttt{1} (not \texttt{1.0}).
+
+\begin{table}[H]
+    \centering
+    \caption{Example submission format with id column and prediction indices.}
+    \label{tab:submission}
+    \begin{tabular}{c c c c c c c}
+        \toprule
+        id & 0 & 1 & 2 & \(\cdots\) & 2046 & 2047 \\
+        \midrule
+        0   & 0.2547 & 0.3874 & 0.9823 & \(\cdots\) & 0.4065 & 0.2341 \\
+        1   & 0.5473 & 0.7682 & 0.1992 & \(\cdots\) & 0.5843 & 0.9895 \\
+        2   & 0.2391 & 0.3145 & 0.9218 & \(\cdots\) & 0.6883 & 0.1286 \\
+        \(\vdots\) & \(\vdots\) & \(\vdots\) & \(\vdots\) & \(\ddots\) & \(\vdots\) & \(\vdots\) \\
+        499 & 0.6201 & 0.2956 & 0.4738 & \(\cdots\) & 0.7821 & 0.3315 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The flattening logic should turn a matrix into an array in the following way (also illustrated in Figure~\ref{fig:flattening}):
+\begin{equation}
+\begin{bmatrix}
+q_{1,1} & q_{1,2} & \cdots & q_{1,n}\\
+q_{2,1} & q_{2,2} & \cdots & q_{2,n}\\
+\vdots & \vdots & \ddots & \vdots\\
+q_{m,1} & q_{m,2} & \cdots & q_{m,n}
+\end{bmatrix}
+\overset{\text{Flatten}}{\longrightarrow}
+[q_{1,1}, q_{1,2}, \ldots, q_{1,n}, q_{2,1}, \ldots, q_{m,n}] .
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{figure3.png}
+    \caption{A prediction on the left with a few highlighted indices are flattened (right) to be saved in the prediction table.}
+    \label{fig:flattening}
+\end{figure}
+
+For example, a Python code snippet that achieves this functionality\footnote{For convenience, this snippet is also on Canvas.} is
+
+\begin{verbatim}
+def save_predictions_to_csv(predictions, csv_save_path):
+    output_np = predictions.cpu().numpy()   # convert to numpy array
+    output_np = output_np.squeeze()         # remove channel dimension
+                                            # new shape: (N, 32, 64)
+    unseen_labels_flat = output_np.reshape(output_np.shape[0], -1)
+                                            # flatten to shape (N, 32*64)
+
+    # create a dataframe for your submission, this will have the format
+    # id, 0, 1, 2, 3, ..., 2047
+    # 0, value, value, value, value, ..., value
+    # 1, value, value, value, value, ..., value
+    # 2, value, value, value, value, ..., value
+    # etc
+    df_pred = pd.DataFrame(
+        unseen_labels_flat,
+        columns=[str(i) for i in range(unseen_labels_flat.shape[1])]
+    )
+    df_pred.insert(0, 'id', range(unseen_labels_flat.shape[0]))
+
+    # save your submission file
+    df_pred.to_csv(csv_save_path, index=False)
+\end{verbatim}
+
+\section*{Expected content and scoring}
+
+For each of the bullet points below, provide concise explanations. You are expected to support your formal statements with formulas and your results with plots. Besides the rubric below, consider also the rubrics of the previous assignments to gauge the level of quality and depth expected.
+
+\subsection*{A. Physics of the problem. 2/10}
+\begin{itemize}
+    \item Analyze extensively the physics of the problem making consideration on dimensionality and scaling. Discuss all the symmetries (invariances/equivariances of the problem).
+    \item Characterize the dataset in statistics terms.
+    \item Write explicitly at least a learning problem in dimensionless form and in degree-1 homogeneous form.
+    \item Propose at least three different loss functions for problem, criticize them in physical terms.
+    \item Propose at least a loss-like function that penalizes the lack of respecting symmetries.
+\end{itemize}
+
+\subsection*{B. Network design. 2.5/10}
+\begin{itemize}
+    \item How would you augment the dataset with respect to the symmetries and would you disambiguate the symmetries?
+    \item Based on what you learnt in the course propose different designs of feedforward neural networks that could fit the learning problem. Rank them by expected efficiency and capacity of respecting some or all the problem symmetries. This point should include (but not be limited to) the following:
+    \begin{itemize}
+        \item Propose a CNN/VGG design that could solve the problem and identify its limitations. Compute the scaling of the receptive fields.
+        \item Consider and criticize the option of a fully convolutional neural network.
+        \item Consider and criticize the option of a U-net.
+    \end{itemize}
+    \item Detail the architecture of each of the previous networks making use, e.g., of diagrams.
+    \item How to hardwire all the symmetries?
+    \item Based on the problem physics, which types of non-physical outputs of the network are possible? How to prevent them?
+\end{itemize}
+
+\subsection*{C. Network implementation performance. 2.5/10}
+\begin{itemize}
+    \item Implement networks to model the problem. You should present at least a tailored CNN design.
+    \item For the network that you implement highlight with code snippets the salient architectural elements.
+    \item Show successful training, comment on possible strategies to avoid overfitting, showcase effectiveness of at least one measure.
+    \item Compare results of networks hardwiring and not hardwiring symmetries. Employ the metrics to evaluate the respect of symmetries that you proposed previously.
+    \item Compare in terms of parameter efficiency different networks solving the problem (CNNs, U-nets, with/without symmetries). Show how U-nets are possibly the most efficient method to solve the problem among the ones seen during the course.
+\end{itemize}
+
+\subsection*{D. Participate to the competition, aspire at the low-complexity parameter bonus. 2/10}
+\begin{itemize}
+    \item Thresholds for Kaggle score 1.5/10
+    \item Low complexity bonus 0.5/10
+    \begin{itemize}
+        \item model has \(\le 120{,}000\) trainable parameters. We want to promote here models that are relatively small and do not require large amount of VRAM to run. This needs to be evidenced in the report, e.g., by including the sum of the amount of weights per layer. For instance you can use the snippet\footnote{For convenience, this snippet is also on Canvas.} below.
+    \end{itemize}
+\end{itemize}
+
+\begin{verbatim}
+def num_params(model):
+    layers = []
+    layer_idx = 0
+
+    for param in model.parameters():
+        if len(param.shape) > 1:  # weights
+            layers.append({"layer": layer_idx, "weight": param.numel(), "bias": 0})
+            layer_idx += 1
+        else:  # bias
+            # this bias is from the last layer, so add to that dict
+            layers[-1]["bias"] = param.numel()
+
+    # now we can loop over the list of dicts and print the info
+    for layer in layers:
+        print(f"Layer {layer['layer']}: {layer['weight']} weights, "
+              f"{layer['bias']} biases ")
+
+    total_params = sum(param.numel() for param in model.parameters())
+    print(f"Total parameters: {total_params}")
+\end{verbatim}
+
+\subsection*{E. Report quality 1/10}
+Produce a clear and complete report, whose conclusions are supported by formulas and high quality figures. Ensure a synthetic and effective scientific language. Ensure the presence of introduction and conclusion. Respect the page limit. The report alone should give a colleague student the opportunity to reproduce all results obtained.
+
+\subsection*{3.1 Important Remarks}
+\begin{enumerate}
+    \item The training time for this problem is going to be substantially longer than in previous assignments. Please take this into account and start early.
+    \item No computations of the solutions with numerical methods different from a feedforward neural network designed on purpose are admitted.
+\end{enumerate}
+
+\section*{Grading Rubric for tasks A--E}
+
+\subsection*{A (20\%)}
+\textbf{Excellent 10:} All the required points are addressed at highest scientific quality level in terms of correctness, usage of formalism, and visualization. Identifies all the symmetries (invariances/equivariances) of the problem or lack thereof. Extensively discusses the physics of the problem based on the training dataset qualitative and quantitative properties. Considers different possibilities for loss functions and discusses the physical reasoning behind. Proposes a loss function that penalizes the lack of respecting symmetries.
+
+\textbf{Good (9--8):} Performs correct dimensional analysis of the system. Deduces at least one dimensionally homogeneous and one dimensionless learning problem. Showcases basic properties of the dataset. Makes an attempt to identify the symmetries of the problem. Proposes at least one meaningful loss function based on physical arguments. Attempts at a loss function that penalizes lack of respecting symmetries.
+
+\textbf{Unsatisfactory (<5.5):} Visible attempt of addressing all the points is missing OR disregards basic principles of dimensional analysis and/or symmetry.
+
+\subsection*{B (25\%)}
+\textbf{Excellent 10:} All the required points are addressed at highest scientific quality level in terms of correctness, usage of formalism, and visualization. Proposes correct strategies for augmentation and disambiguation. Expresses the mathematical formalism to hardwire generic finite symmetry groups in a network and showcases how the mathematical approach to hardwire symmetries can be used to achieve symmetric CNNs, fully conv NN, and U-Nets.
+
+\textbf{Good (9--8):} Correctly discusses in theoretical terms strategies for data augmentation and disambiguation based on physical grounds. Develops them in mathematical terms correctly. Arguments which network designs (including those in the list presented) would be suitable or unsuitable for the problem. Expresses reasonable qualitative expectation on performance based on the architectures (and their sketches).
+
+\textbf{Unsatisfactory (<5.5):} Visible attempt of addressing all the points is missing OR disregards basic concepts connected to the use of symmetry to augment dataset or disambiguate symmetry in learning problems.
+
+\subsection*{C (25\%)}
+\textbf{Excellent 10:} All the required points are addressed at highest scientific quality level in terms of correctness, usage of formalism, and visualization. Implements multiple alternative models with and without symmetries. Implements a U-net-like network and compares performance with the VGG network (and with any other network implemented). Successfully hardwires the symmetries of the problem (i.e.\ has at least a working network design not relying on disambiguation), compares performance with and without enforcing symmetries using a meaningful metric, showcases effectiveness of strategies to prevent overfitting. Correctly reflects on possible further ways of ensuring physical properties of the system. Makes a case about the possible highest parameter efficiency of a UNet design.
+
+\textbf{Good (9--8):} Implements at least a VGG-like working network. Shows successful training, comments on strategies to prevent overfitting. Makes concrete attempts to hardwire the symmetries of the problem. Tries to implement a U-net-like network.
+
+\textbf{Unsatisfactory (<5.5):} Visible attempt of addressing all the points is missing OR lacks implementation of a neural network to solve the problem and/or lacks the points of the next column.
+
+\subsection*{D (15\%)}
+\[
+\begin{aligned}
+10 &: \quad E < 0.10 \cdot 10^{-2},\\
+9 &: \quad E < 0.12 \cdot 10^{-2},\\
+8 &: \quad E < 0.16 \cdot 10^{-2},\\
+7 &: \quad E < 0.22 \cdot 10^{-2},\\
+6 &: \quad E < 0.40 \cdot 10^{-2}.
+\end{aligned}
+\]
+
+No attendance to the Kaggle competition or breaking the rules results in no score here.
+
+\subsection*{D (5\%)}
+\textbf{Low complexity bonus.} Model parameters \(< 120{,}000\). Parameter count for the submitted model should be proved.
+
+\subsection*{Report quality (10\%)}
+Clear, consistent, concise, readable, good layout, proper language and grammar, within page limit, figures have axis labels and captions.
+
+\end{document}

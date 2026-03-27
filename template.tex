@@ -1,0 +1,217 @@
+\documentclass[conference,compsoc]{IEEEtran}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{amsmath}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+% *** CITATION PACKAGES ***
+%
+\ifCLASSOPTIONcompsoc
+  % IEEE Computer Society needs nocompress option
+  % requires cite.sty v4.0 or later (November 2003)
+  \usepackage[nocompress]{cite}
+\else
+  % normal IEEE
+  \usepackage{cite}
+\fi
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+\begin{document}
+%
+% Title
+\title{Flow field through a porous media\\
+GROUP NAME AND NUMBER}
+
+
+% names and affiliations
+\author{\IEEEauthorblockN{Name surname}
+\IEEEauthorblockA{Student id\\dept./bsc course\\
+email}
+\and
+\IEEEauthorblockN{Name surname}
+\IEEEauthorblockA{Student id\\dept./bsc course\\
+email}
+\and
+\IEEEauthorblockN{Name surname}
+\IEEEauthorblockA{Student id\\dept./bsc course\\
+email}}
+
+
+% make the title area
+\maketitle
+\thispagestyle{plain}
+\pagestyle{plain}
+
+% As a general rule, do not put math, special symbols or citations
+% in the abstract
+\begin{abstract}
+Optional. Short summary of the work - Max 120 words.
+\end{abstract}
+
+% no keywords
+
+
+
+
+\section{Introduction}
+% no \IEEEPARstart
+Brief explanation of the overall assignment, of the performance reached, and of the components done.
+
+\section{Part 1 - Theoretical aspects}
+
+\subsection*{A - Content aligned with point A of the rubric/assignment}
+
+Example of inline formula: $y = f(x)$. A block formula instead is as follows
+\begin{equation}
+    y = f(x).
+\end{equation}
+
+\subsection*{B - Content aligned with point B of the rubric/assignment}
+
+Example of figure, which is referenced as Figure~\ref{fig:example-label}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\linewidth]{fig/example_image.png}
+    \caption{Caption example}
+    \label{fig:example-label}
+\end{figure}
+
+
+Example of a subfigure, which elements are referenced as Figure~\ref{fig:first_case} and \ref{fig:full_sub_fig}
+
+\begin{figure}[h]
+    \centering
+    \subfloat[Subcaption example]{\includegraphics[width=0.49\linewidth]{fig/example_subfig_1.png}%
+    \label{fig:first_case}}
+    \hfil
+    \subfloat[Subcaption example]{\includegraphics[width=0.49\linewidth]{fig/example_subfig_2.png}%
+    \label{fig:second_case}}
+    \caption{Full caption example.}
+    \label{fig:full_sub_fig}
+\end{figure}
+
+Alternatively display the same figures spanning across the two text columns as in Figure~\ref{fig:full_sub_fig_alt}
+
+\begin{figure*}[h]
+    \centering
+    \subfloat[Subcaption example]{\includegraphics[width=0.49\linewidth]{fig/example_subfig_1.png}%
+    \label{fig:first_case_alt}}
+    \hfil
+    \subfloat[Subcaption example]{\includegraphics[width=0.49\linewidth]{fig/example_subfig_2.png}%
+    \label{fig:second_case_alt}}
+    \caption{Full caption example.}
+    \label{fig:full_sub_fig_alt}
+\end{figure*}
+
+Bibliography references use instead the \texttt{\\cite} keyword, e.g. \cite{IEEEhowto:kopka}.
+
+\section{Part 2 - Implementation and code}
+
+Discuss key design choices... include key code snippets with \texttt{lstlisting}.
+\begin{lstlisting}[language=Python]
+import numpy as np
+    
+def incmatrix(genl1,genl2):
+    m = len(genl1)
+    n = len(genl2)
+    M = None #to become the incidence matrix
+    VT = np.zeros((n*m,1), int)  #dummy variable
+    
+    #compute the bitwise xor matrix
+    M1 = bitxormatrix(genl1)
+    M2 = np.triu(bitxormatrix(genl2),1) 
+
+    for i in range(m-1):
+        for j in range(i+1, m):
+            [r,c] = np.where(M2 == M1[i,j])
+            for k in range(len(r)):
+                VT[(i)*n + r[k]] = 1;
+                VT[(i)*n + c[k]] = 1;
+                VT[(j)*n + r[k]] = 1;
+                VT[(j)*n + c[k]] = 1;
+                
+                if M is None:
+                    M = np.copy(VT)
+                else:
+                    M = np.concatenate((M, VT), 1)
+                
+                VT = np.zeros((n*m,1), int)
+    
+    return M
+\end{lstlisting}
+
+Showcase convergence/absence of overfit...
+
+
+
+
+
+\section{Conclusion}
+Always sum up your message and results in a concluding section.
+
+
+% references section
+
+% can use a bibliography generated by BibTeX as a .bbl file
+% BibTeX documentation can be easily obtained at:
+% http://mirror.ctan.org/biblio/bibtex/contrib/doc/
+% The IEEEtran BibTeX style support page is at:
+% http://www.michaelshell.org/tex/ieeetran/bibtex/
+%\bibliographystyle{IEEEtran}
+% argument is your BibTeX string definitions and bibliography database(s)
+%\bibliography{IEEEabrv,../bib/paper}
+%
+% <OR> manually copy in the resultant .bbl file
+% set second argument of \begin to the number of references
+% (used to reserve space for the reference number labels box)
+\begin{thebibliography}{1}
+
+\bibitem{IEEEhowto:kopka}
+H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
+  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+
+\end{thebibliography}
+
+\begin{appendices}
+\section{Appendix A title}
+The contents...
+
+\end{appendices}
+
+
+
+% that's all folks
+\end{document}
+
+

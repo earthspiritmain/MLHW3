@@ -1,0 +1,38 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+*.egg-info/
+.pytest_cache/
+
+# Large data files (reference by path, don't load into context)
+flow-field-through-a-porous-media-25-26/*.npy
+flow-field-through-a-porous-media-25-26/*.csv
+
+# Model checkpoints (large binaries)
+experiments/checkpoints/*.pt
+experiments/checkpoints/*.pth
+
+# Submission CSVs (large)
+submissions/*.csv
+
+# Audit run folders (keep active-bundle.json visible)
+.audit/runs/
+
+# Figure binaries
+fig/*.png
+fig/*.pdf
+fig/*.jpg
+
+# IDE config
+.cursor/
+.vscode/
+
+# Secrets
+.env
+*.key
+
+# Keep visible
+!.audit/active-bundle.json
+!.audit/README.md

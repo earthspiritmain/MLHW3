@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jupyter nbconvert:*)",
+      "Bash(python -c:*)",
+      "Bash(python3 -c:*)",
+      "Bash(ls experiments/*)",
+      "Bash(ls submissions/*)",
+      "Bash(ls .audit/*)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git rev-parse*)"
+    ]
+  }
+}

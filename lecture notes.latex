@@ -1,0 +1,4682 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage{longtable,booktabs,array}
+\usepackage{multirow}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\usepackage[normalem]{ulem}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{quote}
+From Linear Regression to Deep Learning J.M.V.A. Koelman (TU/e \&
+DIFFER)\\
+April 6, 2020
+\end{quote}
+
+Notes accompanying the course \textquotesingle Machine Learning for
+Physicists\textquotesingle{} (3EBX0)
+
+1
+
+\begin{quote}
+© 2019 J.M.Vianney A. Koelman
+
+All rights reserved. This work is licensed under the Creative Commons
+Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND
+4.0) Generic License. To view a copy of this license, visit
+http://creativecommons.
+
+org/licenses/by-nc-nd/4.0/ or send a letter to Creative Commons, PO Box
+1866, Mountain View, CA 94042, USA.
+\end{quote}
+
+2
+
+\begin{quote}
+Contents
+
+1 Function Fitting 5
+
+2 About these notes 6
+
+3 Dimensional homogeneity and scaling 8
+
+4 Diagrammatic notation 11
+
+5 Learning problem: Euclidian distance 16
+
+6 Euclidian distance: linear regression 18
+
+7 Euclidian distance: non-linear regression 20
+
+8 Representation Learning 22
+
+9 Review problem: water waves 23
+
+10 Bias parameters 24
+
+11 Expressive power 25
+
+12 Quantifying model performance 27
+
+13 Stochastic gradient descent 29
+
+14 Backpropagation 32
+\end{quote}
+
+15 Putting everything together: regression with feedforward nets 33
+
+\begin{quote}
+16 Learning problem: pendulum frequency 35
+
+17 Review problem 1: triangle area 37
+
+18 Temporal dierence training 38
+
+19 Once more: pendulum frequency 41
+
+20 Review problem 2: inverted pendulum 45
+
+21 Convolutional nets 47
+
+22 Review problem 3: hydraulic cross-section 52
+
+23 Wrapping up 53
+\end{quote}
+
+3
+
+\begin{quote}
+\includegraphics[width=5.33333in,height=3in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image1.png}
+\end{quote}
+
+4
+
+\begin{quote}
+1 Function Fitting
+
+Machine learning is function tting. This statement might come accross as
+a pejorative. An attempt to belittle the successes of machine learning.
+If you think like this, think again. The capability to discover
+functions describing complex data does open up amazing opportunities.
+The key here is scalability towards large and complex data sets that
+require functions of many variables as a descriptor. Constructing a
+function of one variable, a curve describing a set of data pairs,
+constitutes a feat that can impossibly be classied as earth-shattering.
+However, having the capability to construct functions that describe
+high-dimensional data sets containing thousands of variables does open
+up com-plete new avenues. Machine learning gives us exactly that
+capability. A scalable approaches for constructing functions that
+describe large data sets containing lots of variables.
+
+So we can make that rst sentence more precise: machine learning is a
+scalable approach to function tting. This scalable function tting
+technology attracts more and more attention, not just from computer
+scientists, but also from the general public. Recent successes in
+machine learning causes increasing numbers of bloggers, journalists and
+other opinion makers to get carried away in depicting machine learning
+as a route towards super-human intelligence. A route towards super-human
+machines that runs the risk of rendering humans extinct.1Understanding
+what happens \textquotesingle under the hood\textquotesingle{} of
+advanced machine learning algorithms will give you a more nuanced view
+on these matters. Once you have studied and digested this text, I hope
+you will agree that perceiving machine learning as an existential threat
+to humanity constitutes, without any doubt, an extreme form of vilifying
+function tting.
+
+There is no reason to vilify, nor to glorify, function tting. However,
+as mentioned above, astonishing feats can be realized with scalable
+approaches to function tting. When witnessing a machine learning
+algorithm getting better at distinguishing cats from dogs in images of
+pets,2our rst association is unlikely to be `function tting at
+work\textquotesingle. Yet, that is in precisely what is happening:
+discovering a function that maps thousands of individual pixel values
+onto a binary classier (`cat\textquotesingle{} or `dog\textquotesingle).
+It is dicult to imagine how, in the absence of machine learning
+algorithms, one would even start constructing such a function. It is
+quite amazing that with merely a database of images labelled
+`cat\textquotesingle{} or `dog\textquotesingle{} as starting point, a
+function tting process known as supervised machine learning accomplishes
+this challenge.
+
+Describing machine learning as function tting might suggest that the
+start-ing point necessarily has to be a data set containing samples of
+the function that is sought. However, such a data set need not be
+available a-priori. In the absence of data, the function being sought
+can be initialized at random and improved upon iteratively based on its
+performance in a task that is dependent on the quality of the function.
+Such so-called reinforcement learning creates ever more accurate data
+while the function approximation is taking shape. This
+
+1Nick Bostrom, Superinteligence: paths, dangers, strategies, OUP Oxford
+(2014). 2https://www.kaggle.com/c/dogs-vs-cats-redux-kernels-edition
+\end{quote}
+
+5
+
+\begin{quote}
+approach has resulted in major progress in robotics,3and has also
+resulted in computers crushing humans in the game of Go.4What we observe
+in the latter application is a computer outperforming humans in a specic
+function tting exercise. In this case the specic function being sought
+is the player\textquotesingle s advantage as a function of the board
+conguration. With each of the nodes on the 19 x 19 game grid
+representing a separate discrete variable5in the total congura-tion, we
+are dealing with a function of 361 discrete variables. A progressively
+better t to this function is obtained by having multiple approximations
+to this function compete against each other in Go gameplay. The result
+obtained, af-ter weeks of self-training and without any domain-expert
+input, appears to be super-human go-playing capabilities.
+
+In science and engineering, machine learning provides us with an
+alternative route towards constructing functions that describe a given
+system. Generating system models has long been the exclusive realm of
+numerical modeling. Start-ing with a system description and a theory
+applicable to the physical phenomena playing a role, a numerical model
+is created and implemented into a computer algorithm. For instance, in
+computational uid dynamics the ow past an ob-ject (a car, the hull of a
+ship, an airplane, a wind turbine, etc.) is modeled by solving the
+Navier-Stokes ow equations for the geometry at hand. The numerical
+results derived include parameters like drag force as function of ow
+speed and as function of object geometry. These results can be compared
+with experimental data, and provided a satisfactory agreement is
+obtained between the two, the model can be used to predict the same
+parameters for situations that lack experimental data.
+
+What we witness in recent years is an approach being established that is
+complementary to physics-based modeling. An approach that shines exactly
+when traditional modeling methods struggle, and that comes to the fore
+when ample data on the system\textquotesingle s behavior is available
+while the system itself is too complex to be captured in a deductive
+modeling exercise. This new approach of `learning\textquotesingle, as
+opposed to `simulating\textquotesingle, system behaviors relies on the
+func-tion tting capability of machine learning algorithms. These notes
+cover this \textquotesingle machine learning approach to
+modeling\textquotesingle. More specically, as the functions being sought
+are generally continuous functions in the input variables provided,
+throughout the text the focus is on (non-linear) regression problems (as
+opposed to classication.problems).
+
+2 About these notes
+
+This text does not aim to be comprehensive in covering machine learning
+meth-ods. Rather, it is intended to wet your appetite for machine
+learning. The focus
+
+3J.Kober, J.A. Bagnell, and J. Peters, "Reinforcement learning in
+robotics: a survey", The Int. J. of Robotics Research, 32: 1238-1274
+(2013).
+
+4David Silver et al. "Mastering the game of go without human knowledge",
+Nature, 550: 354359 (2017).
+
+5Each grid point can attain three values: empty, occupied by opponent,
+or occupied by self.
+\end{quote}
+
+6
+
+\begin{quote}
+is entirely on the design and training of feedforward nets (articial
+neural nets) for system modeling. The type of models we will construct
+are also known as surrogate models. In recent years, these ultrafast
+models are seeing an increased use in high-throughput computational
+screening and optimization, as well as in real-time control and
+optimization.
+
+This text is for you if your aim is to achieve a conceptual
+understanding of feedforward nets and their use in science and
+engineering. Emphasis is placed on key concepts that can be expected to
+remain relevant, and not on specic software packages that may become
+obsolete within years. If your interest is directed towards the
+practicalities of machine learning software libraries, other text will
+be more suitable.
+
+The following chapters provide the reader with a look
+\textquotesingle under the hood\textquotesingle{} of feedforward nets
+for regression problems. Regression problems are tting prob-lems where
+the function being sought is continuous.6Key concepts are intro-duced by
+applying these to toy problems in regression analysis. We start with
+function tting problems that can be labeled
+\textquotesingle trivial\textquotesingle. For these simple problems
+direct closed-form solutions exist, and machine learning represents a
+roundabout (and, for the problem at hand, rather inecient) route towards
+representing the function being sought. However, precisely by going
+through the `overkill\textquotesingle{} of ap-plying machine learning to
+these simple problems, intuitive insights and a rm grasp of the
+fundamentals of machine learning algorithms become accessible.
+
+Gradually the problems become progressively more complex, and it will
+be-come intuitively clear to the reader under what circumstances
+feedforward nets shine compared to traditional modeling methods. Plenty
+of examples of super-vised learning tasks will be discussed, and also
+reinforcement learning examples will be introduced. Throughout the text,
+focus will be on feedforward nets, with network architectures ranging
+from shallow (e.g. linear regression nets) to deep (e.g. deep
+convolutional nets). The training methods for such nets will be
+dis-cussed, with the basics of backpropagation and stochastic gradient
+descent being presented in an intuitive way. By applying feedforward
+nets to science-based regression problems with well dened inputs and
+outputs, the reader will gain valueable insights into the strengths and
+weaknesses of feedforward nets. When completing the course, you will
+have an intuitive yet thorough understanding of deep learning basics.
+With the knowledge gathered, you should be well-placed to start tackling
+system modeling tasks using feedforward nets.
+
+From the above it should be clear that the character of these notes are
+very much those of a workbook. Machine learning is teached here as a
+full-contact sport. Digesting the theoretical concepts is just the start
+of the learning experience. Trying out the conceptual ideas and
+algorithms in a safe training environment that provides small and
+well-dened model problems renders the true and full understanding.
+
+6As opposed to classication problems where the function being sought
+takes on discrete values only.
+\end{quote}
+
+7
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Throughout the document, text boxes like this present you with hands-on
+exercises. You are asked to reproduce a results, or to expand upon
+results presented. Completion of these exercises does require tools that
+allow you to organize and automate calculations. While dedicated machine
+learning soft-ware packages could come in handy for the more challanging
+exercises, these are certainly not required. In fact, to maximise
+insights derived from the exer-cises, the reader is encouraged to use
+his or her favorite generic programming language (Python or any other
+language) or a generic numerical math environ-ment like MatLab. In
+principle, many exercises can even be completed with a simple
+spreadsheet!
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+3
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Dimensional homogeneity and scaling
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+In physics we study the relationships between measurements. These
+measure-ments are expressed with reference to certain yardsticks, also
+known as units of measurements. These yardsticks are not dened by some a
+priori principle, rather they follow from a concatenation of historical
+(and in hindsight often rather arbitrary) conventions.7
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+physical dimension
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+SI yardstick
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+length
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{m}
+\end{minipage} \\
+\midrule()
+\endhead
+time & \emph{s} \\
+mass & \emph{kg} \\
+area & \emph{m}2 \\
+volume & \emph{m}3 \\
+velocity & \emph{m · s−}1 \\
+acceleration & \emph{m · s−}2 \\
+diusivity & \emph{m}2\emph{· s−}1 \\
+density & \emph{kg·m−}3 \\
+viscosity & \emph{kg·m−}1\emph{· s−}1 \\
+force & \emph{kg · m · s−}2 \\
+pressure & \emph{kg · m−}1\emph{· s−}2 \\
+energy & \\
+\bottomrule()
+\end{longtable}
+
+\emph{kg · m}2\emph{· s−}2
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Despite their relative arbitrariness, such yardsticks are extremely
+useful pro-vided they get widely adopted. Yet, especially in the
+presence of universally adopted yardsticks, we should not lose sight of
+the fact that functional rela-tionships between physical measurements
+should not change were one to opt for alternative yardsticks. With a
+change of yardstick the gures in the relationship between physical
+variables may change, yet the relationship itself should remain
+
+7For instance, our yardstick for time, the second, is dened as the
+duration of 9,192,631,770 periods of the radiation corresponding to the
+transition between the two hyperne levels of the ground state of the
+cesium-133 atom. The specic number 9,192,631,770 is agreed upon by
+convention, and represents an accumulation of historical choices.
+\end{quote}
+
+8
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.6667} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+invariant. In theoretical physics speak: the mathematical relationship
+needs to be covariant with respect to choices of yardstick.
+
+A basic example will make things clear. The length of the hypothenuse of
+a right-angled triangle can be related to the lengths of the other two
+sides via the Pythagorean relationship:
+\end{quote}
+\end{minipage}} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.45694in,height=0.89444in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image2.png}
+\end{quote}
+\end{minipage}} \\
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{c}2= \emph{a}2+ \emph{b}2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(1)
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+The value of the left-hand side and right-hand side of this equation
+will depend on the choice of yardstick. However, regardless whether we
+measure length in meters or in inches, the relationship itself does not
+change. This immediately follows from the fact that all terms on both
+sides of equation (1) represent areas, and therefore carry the same
+physical dimension (length squared), a property known as dimensional
+homogeneity. Mathematically this boils down to the relationship
+\emph{c}(\emph{a, b}) that expresses \emph{c} in terms of \emph{a} and
+\emph{b}, to be homogeneous of degree 1:\\
+\emph{c}(\emph{λa, λb}) = \emph{λc}(\emph{a, b}) (2)
+
+for all \emph{λ \textgreater{}} 0. In this document we will encounter
+many instances of degree-1 homogeneous functional relationships, and for
+brevity we will refer to these as scaling relationships.
+
+Here we have stumbled upon a central theme in physics: encoding
+relation-ships between physical variables requires scaling relationships
+in which dimen-sional homogeneity is achieved. This applies to any eort
+aimed at constructing relationships between variables that describe a
+given physical system. It should therefore not come as a surprise that
+in this machine learning text aimed at modeling physical systems,
+dimensional homogeneity and scaling relationships feature in each and
+every example.
+
+When modeling the behavior of a physical system, we work with well-dened
+inputs and outputs. Dimensional homogeneity boils down to the
+requirement that all inputs and all outputs are to be measured with
+one-and-the-same yard-stick. In the above triangle example the uniform
+yardstick took the shape of a yardstick for length. As mentioned before,
+this yardstick could be a meter or it could be an inch. However, there
+is still a choice to be made that goes beyond this choice. To make this
+specic, imagine we don\textquotesingle t know the Pythagorean the-orem,
+and based on measurement data for many right triangles we are seeking a
+function that describes the length of the hypothenuse in terms of the
+two other side lengths. We have to select a uniform yardstick, and it
+only seems logical to opt for a yardstick of length, and to write
+\emph{c} = \emph{S}(\emph{a, b}), where \emph{S}(\emph{..}) denotes the
+scaling (degree-1 homogeneous) function to be determined. How-ever, we
+could have chosen an entirely dierent yardstick that
+deosn\textquotesingle t measure lengths. For instance, we could select
+as yardstick length squared (area) and write \emph{c}2=
+\emph{S}(\emph{a}2\emph{, b}2). In fact, this alternative choice of
+yardstick happens to closely honor the character of the relationship
+being sought, and certainly for function tting purposes this yardstick
+represents a particularly ecient choice.8
+
+8A choice that renders the hypothenuse tting problem into a trivial
+exercise.
+\end{quote}
+
+9
+
+\begin{quote}
+The same choice appears in other examples. For instance, consider the
+relationship between the propagation speed, \emph{c}, of water waves9and
+the variables that play a role in determining this speed: the water
+depth \emph{h}, the wavelength\emph{λ}, and the gravitational
+acceleration \emph{g}.10 The parameter to be modeled, \emph{c}, carries
+the physical dimension of velocity (length over time). Out of the input
+parameters \emph{h}, \emph{λ}, and \emph{g}, two velocities can be
+constructed:\emph{√gh} and\emph{√gλ}. Hence, we could seek a t:
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{c} = \emph{S}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{gh,}
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{gλ}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(3)
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+where \emph{S}(\emph{..}) denotes a scaling function that is to be
+sought. An alternative way of nding a t could be based on the
+relationship:
+
+\emph{c}2= \emph{S} (\emph{gh, gλ}) \emph{.} (4)
+
+The dierence being that equation (3) assumes a velocity yardstick, while
+equa-tion (4) utilizes a yardstick for velocity squared. Both equations
+lead to a yardstick-independent formulation of wave propagation speeds,
+and both equa-tions are suitable as basis for a function tting exercise.
+In contrast to the above Pythagorean tting problem where a preferred
+yardstick presented itself, here it is not a-priori clear which
+particular parametrization will yield better
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+approximations.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+In fact, the choice between dierent yardstick-independent
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{1.0000} + 2\tabcolsep}@{}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+parametrizations is much larger than the two options presented above.
+For in-
+
+\begin{quote}
+stance, \emph{c}2= \emph{S gh, g√hλ}, \emph{c}2= \emph{S} \emph{g√h}2+
+\emph{λ}2\emph{,ghλh}+\emph{λ}and \emph{c}4= \emph{S}
+\emph{g}2\emph{h}2\emph{, g}2\emph{hλ}
+\end{quote}
+\end{minipage}} \\
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+all form scaling relations in which dimensional homogeneity is achieved.
+Al-though in practice one usually limits the choice between just a few
+basic choices (like equations (3) and (4) above), in the machine
+learning exercises that we will encounter some experimentation between
+these choices can be helpful in achieving high-quality function ts.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: Under the inuence of buoyancy, a ping-pong ball of radius
+\emph{R}, moves up in a uid with density \emph{ρ} and viscosity
+\emph{µ}. The mass of the ball is negligible compared to the mass of the
+displaced uid. The uid and the ball are subject to a gravitational
+acceleration \emph{g}. Write the stationairy upward velocity \emph{v} of
+the ball in the form of a dimensionally homogeneous scaling
+relationship.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+9Here `speed\textquotesingle{} refers to the phase speed, the speed at
+which the phase (e.g. the crest) of the wave propagates.
+
+10For small amplitude and large wavelength water waves, viscous eects
+and surface tension both can be ignored, and the wave amplitude becomes
+an independent variable.
+\end{quote}
+
+10
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: You are tasked to determine the angular frequency \emph{ω} of
+a pendulum subject to a gravitational acceleration \emph{g}. The
+pendulum consists of a massless arm of xed length \emph{ℓ}connecting a
+massive bob to a frictionless pivot. The bob moves without friction
+along a circular path. Below gure shows the geometry with the pendulum
+at maximum amplitude: the vertical position of the bob is a distance
+2\emph{h} above the equilibrium point and a distance 2\emph{d} below the
+apex of this circle.
+
+\includegraphics[width=3.33889in,height=2.83611in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image3.png}
+
+Dene a suitable minimum set of input parameters that can be used in a
+scaling relation for calculating the oscillation frequency. What
+alternative choices are available?
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+4
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Diagrammatic notation
+\end{quote}
+\end{minipage} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\includegraphics[width=0.56944in,height=1.15556in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image4.png}
+
+\begin{quote}
+\includegraphics[width=0.375in,height=1.0375in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image5.png}
+\end{quote}
+\end{minipage}} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.6667} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+We will be dealing with functional relationships encoded by
+computational net-works consisting of multipliers and rectiers. These
+functional relationships can be expressed in algebraic notation, but
+often it is more insightful to represent these in a diagram. In network
+diagrams, a multiplier is represented by a solid line, and a rectier by
+a wigly line. Multipliers and rectiers both come with two end points: an
+input that carries an input value and an output that carries an output
+value. In the diagrams, each element is always shown with its output
+positioned above the input. Furthermore, a weight is associated with
+each mul-tiplier. This weight represents the multiplicative value: the
+ratio between the output value and the input value. In other words: a
+multiplier with weight \emph{w}, when oered an input \emph{x}, will
+generate an output \emph{y} = \emph{wx}. For a rectier, also referred to
+as rectied linear unit (ReLU), the output equals the input, unless the
+input is negative. In this latter case the output is clipped to zero. In
+other
+\end{quote}
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+11
+
+\begin{quote}
+words, for input \emph{x} a rectier yields an output \emph{g}(\emph{x})
+that satises11:
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\emph{g}(\emph{x}) = \emph{max}(\emph{x,} 0) =
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{x}
+\end{minipage} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{x ≥}0\\
+\emph{x \textless{}} 0
+\end{quote}\strut
+\end{minipage}} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+(5)
+\end{minipage}} \\
+& \begin{minipage}[b]{\linewidth}\raggedright
+0
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Given the two building blocks, we also need a rule for combining these
+into functional networks. This rule is simple: the end points of
+mutipliers and recti-ers can be joined together at will, thereby forming
+nodes. A node that joins up several outputs acquire a value equal to the
+sum of these outputs. The inputs joining up at the same node all acquire
+this sum value. Note that the diagram drawing rule mentioned before "the
+output of each building block is positioned above its input" not only
+eliminates any ambiguity about what is the input
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+and what is the output of each element, it also prevents any `closed
+computa-tional loops\textquotesingle{} to form.12Eectively, in the
+diagrams a `direction of computation\textquotesingle{} emerges that is
+always upward. The resulting diagrams have the input nodes at the
+bottom, and the output nodes at the top. To stress the unidirectional ow
+of information, these nets are referred to as feedforward nets. In these
+notes we will mostly stick to this terminology. Occasionally, we will
+also use the more popular and more suggestive term neural nets.
+
+A very simple feedforward net containing just two multipliers is
+represented graphically as shown on the right. The output node (the top
+node in the dia-gram) yields the weighted linear sum of two input
+variables \emph{x}1 and \emph{x}2 and can be expressed as \emph{y} =
+\emph{w}1\emph{x}1 + \emph{w}2\emph{x}2. Such a linear network can be
+extended to as many input variables as is required by the function to be
+modeled: weighted linear sums of three variables can be represented with
+three links joining into one node, and so on. Networks can also have
+more than one output. An exam-ple is shown on the right. This network
+features two inputs and three outputs, and consists of multipliers only.
+The functional relationship between outputs and inputs is given by a
+matrix equation:\\
+ \emph{y}1 \emph{y}2 \emph{y}3 = \emph{w}11 \emph{w}21 \emph{w}31
+\emph{w}12 \emph{w}22 \emph{w}32  \emph{x}1 \emph{x}2 (6)
+
+Networks consisting exclusively of multipliers always encode a matrix
+equa-tion. So any diagram of a multiplier-only net boils down to a
+diagrammatic representation of a matrix equation. This also applies when
+the diagram ac-quires \textquotesingle depth\textquotesingle{} with
+outputs of multipliers feeding into a next layer of multipliers (see
+diagram on the right). Here, the functional relationship between outputs
+\end{quote}\strut
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.125in,height=1.275in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image6.png}
+
+\includegraphics[width=1.4in,height=1.35694in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image7.png}
+\end{quote}
+
+\includegraphics[width=1.34167in,height=1.925in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image8.png}
+\end{minipage} \\
+\midrule()
+\endhead
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+11In the literature you will come accross activation functions
+\emph{g}(\emph{x}) dierent from ReLU\textquotesingle s. For instance,
+sigmoidal activation functions continue to enjoy a certain popularity,
+and a whole range of avors of smooth activation functions such as
+SoftPlus and Tanh are also utilized in
+\end{quote}
+\end{minipage} &
+\includegraphics[width=1.34167in,height=1.925in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image8.png} \\
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+current machine learning research. In recent years,
+ReLU\textquotesingle s have gained popularity and now form the most-used
+activation function. In this text we will stick to
+ReLU\textquotesingle s as these combine simplicity with the feature of
+being homogeneous of degree one: \emph{g}(\emph{λx}) =
+\emph{λg}(\emph{x}), a feature that comes in handy when describing
+physics systems.
+
+12Computational nets containing closed loops (e.g. recurrent neural
+nets) are not discussed in this text
+\end{quote}
+
+12
+
+\begin{quote}
+and inputs is given by the matrix equation:
+
+\emph{y}1 \emph{y}2 = \emph{v}11 \emph{v}21 \emph{v}12 \emph{v}22
+\emph{v}13 \emph{v}23  \emph{w}11 \emph{w}21 \emph{w}31 \emph{w}12
+\emph{w}22 \emph{w}32  \emph{x}1 \emph{x}2 (7)
+
+Such a nested linear dependency can be contracted into a direct linear
+de-pendency. This amounts to nothing more than carrying out the matrix
+multi-plication in the above equation:
+
+\includegraphics[width=3.54167in,height=2.275in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image9.png}
+
+Note that in the contracted net the weight between a given input and a
+given output takes the form of a sum over all paths that connect this
+particular input-output pair in the original net. Each term in this sum
+over paths is formed by a multiplication of all weights encountered
+along the path considered.
+
+By \textquotesingle freeing\textquotesingle{} the weights in the
+contracted network (i.e. by not prescribing the weights to sums of
+products of the weights in the nested network, but by treating all
+weights as free parameters), its expressive power can not be reduced. It
+follows that the expressive power of a contracted network is at least as
+good as that of the original stacked network: any function that can be
+expressed by adapting the weights in a nested linear network, can also
+be expressed by adapting the weights in the contracted network. In the
+above example, the contraction leads to a network with fewer weights (4
+instead of 12) but with the same expressive power. In some cases, the
+expressive power even increases by contracting linear layers. In the
+diagram below, the contraction leads to a network with fewer weights (9
+instead of 12) and increased expressive power: modifying the 9 weights
+in the diagram at the right leads to richer input-output relationships
+than modifying the 12 weights in the diagram on the left.
+\end{quote}
+
+13
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\includegraphics[width=3.96667in,height=2.2in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image10.png}
+
+\begin{quote}
+From these examples it should be clear that \textquotesingle adding
+depth\textquotesingle{} to a diagram by stacking linear layers makes
+little sense. Doing so tends to increase the number of weights while the
+expressive power of the net does not increase.
+
+Including rectiers, adding depth becomes much more meaningful, and more
+complex (nonlinear) functional relationships can be created. A simple
+example is shown on the right: a weighted linear sum feeding into a
+rectier. This particular
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.1375in,height=1.40555in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image11.png}
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+diagram with two inputs represents the functional relationship \emph{y}
+= \emph{g}(\emph{w}1\emph{x}1 + \emph{w}2\emph{x}2). Such a functional
+relationship loosely mimics the signals propagating through biological
+neurons. For that reason a feedforward net like the one depicted on the
+right is often referred to as an articial neuron. Note that in this
+diagram, we have suppressed listing the weights. This is useful when
+discussing generic functional relationships. Throughout the text, in
+case the weights take specic values, these will be listed explicitly in
+the relevant diagrams.
+
+A more complex network is shown below. The functional relation
+represented by this graph can be written as:
+
+\emph{y} = \emph{w}01\emph{g}(\emph{w}11\emph{x}1 + \emph{w}12\emph{x}2)
++ \emph{w}02\emph{g}(\emph{w}21\emph{x}1 + \emph{w}22\emph{x}2) +
+\emph{w}03\emph{g}(\emph{w}31\emph{x}1 + \emph{w}32\emph{x}2) (8)
+\end{quote}
+
+\includegraphics[width=1.18056in,height=2.01805in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image12.png}
+
+\begin{quote}
+Computational nets of much higher complexity can be created. Often, such
+nets follow a layered architecture consisting of alternating layers of
+multipliers
+\end{quote}
+
+14
+
+\begin{quote}
+(straight lines) and layers of rectiers (wiggly lines). The
+unidirectional in-formation ow in such layered nets becomes pronounced
+when considering the computation of the nodal values. Once the inputs
+(the bottom row of nodes) are specied, the values of the nodes one level
+up in the diagram directly follow. Via iteration the nodal values in
+higher layers follow. This iterative computa-tion is complete once the
+values for the top nodes (the output nodes) have been computed. This
+bottom-up computational proces is referred to as a forward pass through
+the network. Later we will also encounter a backward pass (the so-called
+backpropagation) used in the updating of the weights of the net (the
+training of the net).
+
+Alternating layers of multipliers and rectiers prevents multipliers
+feeding directly into multipliers. This ensures that the net can not be
+contracted in the way indicated above. In machine learning literature,
+feedforward nets contain alternating linear and non-linear layers are
+often represented diagrammatically in more course-grained ways. A
+double-layer consisting of weighted linear sums feeding into rectiers is
+typically represented as a single layer of articial neu-rons. Each layer
+of output nodes of these articial neurons that acts as inputs for a next
+layer of articial neurons, is referred to as a layer of hidden nodes.
+Following this convention, below diagram contains two layers of hidden
+nodes (indicated in black).
+\end{quote}
+
+\includegraphics[width=1.225in,height=2.93194in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image13.png}
+
+\begin{quote}
+The adaptive weights of the feedforward net are associated with the
+linear layers. An important parameter for these nets is therefore the
+number of linear layers that is present, a parameter commonly referred
+to as the depth of the net. Alternatively, as the number of linear
+layers always exceeds the number of layers of hidden nodes by one, the
+depth can also be expressed as the number of hidden layers. When
+represented as a functional relation, the depth of nesting of the
+non-linear transforms corresponds to the depth of the net expressed in
+number
+\end{quote}
+
+15
+
+\begin{quote}
+of hidden layers. As an example, the feedforward net depicted above has
+two layers of hidden nodes and therefore three linear layers with
+adaptive weights. This diagram corresponds to a functional nestings of
+the form \emph{w}0\emph{g}(\emph{w}01\emph{g}(\emph{w}11\emph{x}1+
+\emph{w}12\emph{x}2) + \emph{..}).
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: when representing the feedforward net shown above as a
+three-layer network of neurons, what activation function should be used
+in the top layer of neurons?
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule()
+\multicolumn{4}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.8000} + 6\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: write down the full functional relationship between inputs and
+out-puts for the above diagram.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Next to the depth, feedforward nets also have a width. Width can be
+quan-tied by counting the number of nodes in the widest layer. The above
+net has a width of three.
+\end{quote}
+\end{minipage}} &
+\multirow{6}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{n}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{m}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{d}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+0
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+2
+\end{minipage} \\
+\midrule()
+\endhead
+2 & 0 & 2 \\
+3 & 4 & 5 \\
+4 & 3 & 5 \\
+5 & 12 & 13 \\
+7 & 24 & 25 \\
+8 & 15 & 17 \\
+9 & 40 & 41 \\
+11 & 60 & 61 \\
+12 & 5 & 13 \\
+12 & 35 & 37 \\
+15 & 8 & 17 \\
+17 & 144 & 145 \\
+20 & 21 & 29 \\
+21 & 20 & 29 \\
+24 & 7 & 25 \\
+28 & 45 & 53 \\
+31 & 480 & 481 \\
+35 & 12 & 37 \\
+40 & 9 & 41 \\
+45 & 28 & 53 \\
+60 & 11 & 61 \\
+144 & 17 & 145 \\
+480 & 31 & 481 \\
+\bottomrule()
+\end{longtable}
+\end{minipage}} \\
+\begin{minipage}[b]{\linewidth}\raggedright
+5
+\end{minipage} &
+\multicolumn{3}{>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.6000} + 4\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Learning problem: Euclidian distance
+\end{quote}
+\end{minipage}} \\
+\multicolumn{4}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.8000} + 6\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Let\textquotesingle s pretend you don\textquotesingle t know the
+Pythagorean theorem. Could you still tackle a problem that is typically
+solved by employing this theorem? Can you bypass Pythagoras and nd an
+approximate solution using a feedforward net?
+\end{quote}
+\end{minipage}} \\
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.6000} + 4\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+You walk \emph{n} steps north followed by \emph{m} steps east.
+\end{quote}
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+You then return in a
+\end{minipage} \\
+\multicolumn{4}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.8000} + 6\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+straight line to your starting point. This return journey takes \emph{d}
+steps. You note down the triplet (\emph{n, m, d}) and repeat the
+experiment for dierent \emph{n} and \emph{m} values. This results in two
+dozen triplets all noted down in the table on the right. The question
+is: based on this data, can you predict for arbitrary values of \emph{n}
+and \emph{m} the number of steps \emph{d} that will bring you in a
+straight line back to your starting point? Can you do so within an
+accuracy of 1\%?
+
+We are seeking a function \emph{f}() such that \emph{d} =
+\emph{f}(\emph{n, m}). As mentioned: we assume a complete lack of
+knowledge of the Pythagorean theorem. Still it helps to consider the
+general characteristics of the function \emph{f}(). We might not be
+familiar with the Pythagorean theorem, but that surely
+doesn\textquotesingle t mean we have zero knowledge about this function.
+
+Firstly, we notice that the function \emph{f}(\emph{n, m}) is symmetric
+in it\textquotesingle s arguments:
+\end{quote}
+\end{minipage}} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.4000} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{f}(\emph{n, m}) = \emph{f}(\emph{m, n}).
+\end{minipage}} &
+\multicolumn{2}{>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.4000} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+This symmetry is apparent from the data on the right,
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+and follows directly from the fact that mirror-imaging the walking scene
+in a diagonal (running northeast to southwest) will swap the directions
+\textquotesingle north\textquotesingle{} and
+\textquotesingle east\textquotesingle{} while leaving the return
+distance \emph{d} unaected. It follows that we need to construct
+\emph{f}(\emph{n, m}) only for \emph{n ≥m}, as
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\emph{d} = \emph{f}(\emph{n, m}) =
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{f}(\emph{n, m})
+\end{minipage} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{n ≥m}\\
+\emph{n \textless{} m}
+\end{quote}\strut
+\end{minipage}} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+(9)
+\end{minipage}} \\
+& \begin{minipage}[b]{\linewidth}\raggedright
+\emph{f}(\emph{m, n})
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Another way of noting down this expression is \emph{d} =
+\emph{f}(\emph{max}(\emph{n, m})\emph{, min}(\emph{n, m})). Henceforth,
+without loss of generality, we assume \emph{n ≥m} and write \emph{d} =
+\emph{f}(\emph{n, m}).
+\end{quote}
+
+16
+
+\begin{quote}
+A second symmetry applies. This symmetry is the scaling symmetry
+dis-cussed in section 3. Physics principles dictate the relationship
+\emph{d} = \emph{f}(\emph{n, m}) to be invariant under the choice of
+unit of length. For instance, if the relationship \emph{d} =
+\emph{f}(\emph{n, m}) is obtained for a certain step size, then the very
+same relationship must hold when the step size is halved. It follows
+that 2\emph{d} = \emph{f}(2\emph{n,} 2\emph{m}). More in general, if
+\emph{d} = \emph{f}(\emph{n, m}), then for any positive value of
+\emph{λ} it must also be true that \emph{λd} = \emph{f}(\emph{λn, λm}).
+In math lingo: the function \emph{f}() must be a homogeneous function of
+degree one: \emph{f}(\emph{λn, λm}) = \emph{λf}(\emph{n, m}). Here we
+refer to such functions as scaling functions.
+
+We can further benet from the freedom we have in choosing units. There
+is no need to select your step size as unit of measurement. Within a
+single data triplet we should avoid mixing units, but we do have the
+freedom to select the unit of length for each input data triplet
+separately. More specically, as long as we restrict ourselves to scaling
+tting functions\emph{f}(\emph{n, m}), we can select the unit of length
+for each input data triplet equal to the length of the return journey.
+This renders the third value in each of the data triplets equal to
+unity.
+
+Incorporating the north-east permutation symmetry as well as the scale
+sym-metry, it follows that we can limit ourselves to the twelve
+re-scaled input data points shown below.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{x} =\emph{\uline{n} d y} =\emph{m d}
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{x} =\emph{\uline{n} d y} =\emph{m d}
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+1.000 0.000
+
+0.998 0.064
+
+0.993 0.117
+
+0.984 0.180
+
+0.976 0.220
+
+0.960 0.280
+\end{quote}
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+0.946 0.324
+
+0.923 0.385
+
+0.882 0.471
+
+0.849 0.528
+
+0.800 0.600
+
+0.724 0.690
+\end{quote}
+\end{minipage} \\
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+below. We immediately recognize all data points to lay on a circle
+segment, and A plot of these \textquotesingle unit return distance data
+pairs\textquotesingle{} \emph{\{}(\emph{x, y})\emph{\}} =
+\emph{\{}(\emph{n d, m d})\emph{\}} is shown
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+it is tempting indeed to t the data to a circle. However, this would
+equate to utilizing the Pythagorean theorem, something we agreed to
+avoid.
+\end{quote}
+
+\includegraphics[width=3.31667in,height=2.29167in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image14.png}
+
+17
+
+\begin{quote}
+Let\textquotesingle s see how well we can approximate the data points
+using generic machine learning methods. In our search for a good t, we
+can get guidance simply by observing in \emph{x}-\emph{y} plots the
+mismatches between approximated and measured unit return journey data.
+This allows us to get familiar with some basic machine learning
+approaches, without the need to dive into specic algorithms.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+6
+\end{minipage} &
+\multicolumn{2}{>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.5000} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Euclidian distance: linear regression
+\end{quote}
+\end{minipage}} &
+\multirow{4}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=0.9875in,height=1.08194in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image15.png}
+\end{quote}
+\end{minipage}} \\
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.7500} + 4\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+The problem described in the previous chapter asks for a scale-invariant
+function \emph{f}(\emph{x, y}) for which the relationship
+\emph{f}(\emph{x, y}) = 1 traces out a curve that describes the data in
+the plot above. A logical starting point would be to t the unit return
+journey data pairs to the most basic scaling (degree-1 homogeneous)
+function available:
+\end{quote}
+\end{minipage}} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.5000} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{f}(\emph{x, y}) = \emph{w}1\emph{x} + \emph{w}2\emph{y}
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+(10)
+\end{minipage} \\
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.7500} + 4\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+The graphical notation for this class of tting functions is shown on the
+right.
+\end{quote}
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Graphing \emph{w}1\emph{x}+\emph{w}2\emph{y} = 1 in a \emph{x}-\emph{y}
+plot will result in a straight line. By varying the weights, the
+position and slope of this line will change. The line \emph{w}1\emph{x}
++ \emph{w}2\emph{y} = 1 for \emph{w}1 = 0\emph{.}95 and \emph{w}2 =
+0\emph{.}38 is shown in blue in the plot below.
+
+\includegraphics[width=3.60833in,height=2.30833in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image16.png}
+
+We observe a t between the straight line and the data points. It is not
+a great t, but a t nonetheless with an accuracy within 5\%. The t
+becomes more apparent when plotting the true \emph{d} values for all
+triplets (\emph{n, m, d}) against the predicted 0\emph{.}95\emph{n} +
+0\emph{.}38\emph{m} (\emph{n ≥m}) values (see below scatterplot). Due to
+the large dynamic range covered in this log-log plot, the mismatches are
+less prominent.
+\end{quote}
+
+18
+
+\includegraphics[width=2.78333in,height=2.44167in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image17.png}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: reproduce the above two plots obtained for \emph{w}1 =
+0\emph{.}95 and \emph{w}2 = 0\emph{.}38. Change the values \emph{w}1 and
+\emph{w}2 and observe the changes in both plots. Start-ing from
+arbitrary values for the weights \emph{w}1 and \emph{w}2, can you
+systematically improve the t by varying both weights?
+\end{quote}
+
+Hint: computing (\emph{x, y}) pairs with \emph{f}(\emph{x, y}) = 1 is
+easily accomplished by starting
+
+\begin{quote}
+with any suitable pair (\emph{u, v}) and constructing (\emph{x, y}) =
+(\emph{u/f}(\emph{u, v})\emph{, v/f}(\emph{u, v})).
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Can we improve upon this t to reach the desired 1\% accuracy level?
+Eec-tively what we have achieved is a t \emph{f}(\emph{x, y}) =
+\emph{w}1\emph{g}1(\emph{x, y}) + \emph{w}2\emph{g}2(\emph{x, y}) for
+the choice \emph{g}1(\emph{x, y}) = \emph{x} and \emph{g}2(\emph{x, y})
+= \emph{y}. We can attempt to improve the t by adding degree-1
+homogeneous terms \emph{wkgk}(\emph{x, y}) for k = 3, 4 and so on:
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{f}(\emph{x, y}) = \emph{w}1\emph{g}1(\emph{x, y}) +
+\emph{w}2\emph{g}2(\emph{x, y}) + \emph{w}3\emph{g}3(\emph{x, y}) +
+\emph{..}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(11)
+\end{minipage} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.1625in,height=1.15556in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image18.png}
+\end{quote}
+\end{minipage}} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.6667} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+This expression corresponds to the diagram shown on the right. As long
+as all \emph{gk}(\emph{x, y}) functions are degree-1 homogeneous, the
+scaling symmetry of the \emph{f}(\emph{x, y}) function will be honoured.
+The process in which a t is obtained by utilizing a function linear in
+the weights \{\emph{wk}\} (such as the function shown in Eq. 2) is known
+as linear regression. A practical problem in linear regression, however,
+is that we lack a generic choice for how to systematically construct the
+basis functions \emph{gk}(\emph{x, y}). In the present example, while
+the choices for \emph{g}1(\emph{x, y}) = \emph{x} and
+\end{quote}
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+\emph{g}2(\emph{x, y}) = \emph{y} come across as rather obvious, we
+sorely miss a choice for \emph{g}3(\emph{x, y}) that can be qualied as
+\textquotesingle obvious\textquotesingle.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: While we lack an obvious choice for \emph{g}3(\emph{x, y}),
+there is no lack of potentially suitable degree-1 homogeneous choices.
+For instance, for a xed value \emph{λ}, functions of the form
+\emph{g}3(\emph{x, y}) = \emph{x}1\emph{−λyλ}could be used. Select a
+specic value for \emph{λ} and construct a t using the function
+\emph{f}(\emph{x, y}) = \emph{w}1\emph{x} + \emph{w}2\emph{y} +
+\emph{w}3\emph{x}1\emph{−λyλ}. Starting from arbitrary values for the
+weights \emph{w}1, \emph{w}2 and \emph{w}3, iteratively improve this
+linear-regression t by varying these weights by hand while observing the
+changes in a \emph{x −y} plot. Can you reach the desired 1\% accuracy
+level?
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+19
+
+\begin{quote}
+7 Euclidian distance: non-linear regression
+
+To nd an alternative route towards deriving improved ts, we generalize
+the tting function \emph{f}(\emph{x, y}) = \emph{w}1\emph{x} +
+\emph{w}2\emph{y} into \emph{f}(\emph{x, y}) =
+\emph{φ}(\emph{w}1\emph{x} + \emph{w}2\emph{y}). In the above exercise
+we have used for the transfer funstion \emph{φ}() the identity
+function\emph{φ}(\emph{z}) = \emph{z}, but we could have used any
+degree-1 homogeneous function. As long as \emph{φ}(\emph{λz}) =
+\emph{λφ}(\emph{z}) for all positive \emph{λ}, scaling symmetry for
+\emph{f}() will be honoured. A suitable transfer function is the rectier
+function \emph{g}(\emph{z}) = \emph{max}(\emph{z,} 0) that was
+introduced in section 4. In contrast to the identity function, this
+choice of transfer function results in a tting term
+\emph{g}(\emph{w}1\emph{x}+\emph{w}2\emph{y}) that makes the
+construction of a sum of such terms meaningful as a tting function. Thus
+we land on an expansion of the form
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{f}(\emph{x, y}) = \emph{g}(\emph{w}11\emph{x} +
+\emph{w}12\emph{y}) + \emph{g}(\emph{w}21\emph{x}+\emph{w}22\emph{y}) +
+\emph{...}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(12)
+\end{minipage} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.23194in,height=2.1in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image19.png}
+\end{quote}
+\end{minipage}} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.6667} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+This expression corresponds to the diagram shown on the right. The
+process in which a t is obtained by utilizing a function as shown in Eq.
+12 is an example of nonlinear regression using feedforward nets (aka
+neural nets). Here the non-linearity is introduced by the use of a
+broken-linear transfer functions \emph{g}().
+
+In the diagrams, the non-linearity is linked to the occurrence of wavy
+lines, the rectiers. The earlier diagram, corresponding to the linear
+regression tting functing Eq. (11), consists of just a single linear
+layer and is void of any wavy lines. The present feedforward diagram,
+corresponding to Eq. 12, on the other hand does contain a layer of wavy
+lines sandwiched in-between two linear layers. As we will see later, the
+non-linearity introduced by the occurrence of the recti-er function has
+profound consequences in terms of the computations required to optimise
+the t. For the present problem, the non-linearity introduces no real
+obstacle, as we can track the regression process by visually inspecting
+the
+\end{quote}
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+t in a \emph{x −y} plot.
+
+Using \emph{f}(\emph{x, y}) = \emph{g}(\emph{w}11\emph{x} +
+\emph{w}12\emph{y}) + \emph{g}(\emph{w}21\emph{x}+\emph{w}22\emph{y})
+with the ReLU transfer function \emph{g}(), we again seek to t
+\emph{f}(\emph{x, y}) = 1 to the set of data pairs (\emph{x, y}). By
+selecting the weights \emph{w}11 = +0\emph{.}992, \emph{w}12 =
++0\emph{.}163, \emph{w}21 = =0\emph{.}143 and \emph{w}22 = +0\emph{.}381
+we obtain the t shown below.
+\end{quote}
+
+20
+
+\includegraphics[width=2.98333in,height=2.41667in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image20.png}
+
+plot on p. 7). Upon inspection the accuracy of the t appears to be
+within the We observe a considerably closer t than the linear regression
+t (Cf. \emph{x −y}
+
+\begin{quote}
+desired 1\%.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: reproduce the above \emph{x}-\emph{y} plot, and create the
+corresponding log-log plot for the true vs predicted return distances.
+Verify that the accuracy of the t is indeed within 1\%.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+The blue tting curve in above x-y plot consists of two linear segments.
+In general, an approximation based on a feedforward net with ReLUs is
+piecewise linear, with the number of linear regions corresponding to the
+complexity of the net. Having accomplished a robust t to the return
+distances, we will not pursue eorts aimed at improving the t by
+increasing the number of linear regions.
+
+We do note however, that if needed, we can systematically increase the
+number of linear regions by expanding the feedforward net. One way is to
+increase the width of the feedforward net by including additonal tting
+terms. E.g. by using \emph{f}(\emph{x, y}) =
+\emph{g}(\emph{w}11\emph{x}+\emph{w}12\emph{y})+\emph{g}(\emph{w}21\emph{x}+\emph{w}22\emph{y})+\emph{g}(\emph{w}31\emph{x}+\emph{w}32\emph{y}).
+Alternatively, we can increase the depth of the network. This boils down
+to the use of nested tting functions containing terms like
+\emph{g}(\emph{w}01\emph{g}(\emph{w}11\emph{x} + \emph{w}12\emph{y}) +
+\emph{w}02\emph{g}(\emph{w}21\emph{x}+\emph{w}22\emph{y})). A prominent
+current trend in machine learning research is the use of deep nestings,
+i.e.\\
+the use of deep feedforward nets. This approach is referred to as deep
+As mentioned, at this stage and for this specic problem we will
+learning.
+
+not pursue more complex (deeper nor wider) feedforward nets. However,
+when treating more complex tting problems, both approaches for scaling
+up network complexities will become increasingly important.
+
+Finally, let\textquotesingle s consider what this basic machine learning
+exercise has delivered us. Dening \emph{n} =
+\emph{max}(\emph{StepsNorth, StepsEast}), and \emph{m} =
+\emph{min}(\emph{StepsNorth, StepsEast}), training of a
+small13feedforward net resulted in an estimate for the straight-
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+line return distance \emph{d} that is accurate within 1\%:
+\emph{d}(\emph{n, m}) \emph{≈max}(0\emph{.}992\emph{n} +
+0\emph{.}163\emph{m,} 0) + \emph{max}(=0\emph{.}143\emph{n} +
+0\emph{.}381\emph{m,} 0). In AI (articial intelligence) lingo
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+13one hidden layer of width two, i.e. a net containing no more than two
+hidden nodes
+\end{quote}
+
+21
+
+\begin{quote}
+uncovering this relationship would typically be described
+\textquotesingle machine learning Pythagoras\textquotesingle{} or even
+\textquotesingle discovering Pythagoras with machine
+learning\textquotesingle. A way less suggestive (and more accurate)
+terminology would be to refer to the above relationship as nothing more
+(and nothing less) than a 1\% accurate piecewise linear t to the
+Pythagorean distance \emph{d} retrieved by non-linear regression.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Explain that, without losing any accuracy, the formula above can be
+simplied into \emph{d}(\emph{n, m})
+\emph{≈}0\emph{.}992\emph{n}+0\emph{.}163\emph{m}+\emph{max}(=0\emph{.}143\emph{n}+0\emph{.}381\emph{m,}
+0). Draw the network diagram corresponding to this equation.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+8
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Representation Learning
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+The euclidian distance exercise in previous sections made us land two
+alternative function tting approaches. Each approach implies a dierent
+philosophy to function tting. Let\textquotesingle s investigate this in
+more detail.
+
+The rst method, linear regression, approximates a function
+\emph{f}(\emph{x, y}) using an expansion of the form
+
+\emph{f}(\emph{x, y}) = \emph{w}1\emph{g}1(\emph{x, y}) +
+\emph{w}2\emph{g}2(\emph{x, y}) + \emph{w}3\emph{g}3(\emph{x, y}) +
+\emph{..} (13)
+
+Here, the various basis functions \emph{gk}(\emph{x, y}) used in the
+expansion function are all fully specied by the user. These basis
+functions do depend on the input variables \emph{x} and \emph{y}, and in
+general they do so in a non-linear fashion, but they
+don\textquotesingle t depend on any tting parameters. The function
+\emph{f} does depend on the tting parameters \emph{\{wk\}}, and does so
+in the form of a linear dependency. For function tting problems where a
+suitable set of basis functions is available, linear regression provides
+us with a convenient function tting method.
+
+The second method, feedforward net based regression, in its most basic
+form approximates a function \emph{f}(\emph{x, y}) by using an expansion
+of the form
+
+\emph{f}(\emph{x, y}) = \emph{g}(\emph{w}11\emph{x} +
+\emph{w}12\emph{y}) + \emph{g}(\emph{w}21\emph{x}+\emph{w}22\emph{y}) +
+\emph{...} (14)
+
+where the function \emph{g}() denotes a rectier function. In more
+complex cases, a nesting of such rectier functions appears:
+
+\emph{f}(\emph{x, y}) = \emph{g}(\emph{w}01\emph{g}(\emph{w}11\emph{x} +
+\emph{w}12\emph{y}) +
+\emph{w}02\emph{g}(\emph{w}21\emph{x}+\emph{w}22\emph{y})) + \emph{...}
+(15)
+
+Apart from the choice of nesting (the
+\textquotesingle architecture\textquotesingle{} of the feedforward net),
+the user does not need to make any eorts in identifying suitable basis
+functions nor in identifying any other form of representation underlying
+the tting problem.
+
+Both in linear regression as well as in non-linear feedforward net
+regression, we need to make a choice of coordinates used to represent
+the input. In the above equations this is the choice of the coordinates
+\emph{x} and \emph{y}. This often boils down to a choice for a suitable
+uniform yardstick (see chapter 3). Given the choice of coordinates, the
+routes subsequently followed in linear regression and in feedforward net
+regression depart sharply. In loose terms, the linear regression
+\end{quote}
+
+22
+
+\begin{quote}
+route relies on a tting process with hand-designed representations in
+the chosen coordinates, while the non-linear feedforward net method
+discovers itself the representation in terms of the coordinates. For
+this reason the feedforward net based method is sometimes referred to as
+representation learning. In recent years, the term deep learning has
+become more common. Here, the adjective
+\textquotesingle deep\textquotesingle{} refers to the depth of
+functional nesting that tends to be employed.
+
+Deep feedforward nets enable the discovery of nested representations:
+high-level representations in the form of patterns of nodal values,
+expressed in ever simpler representations, until the most basic
+representations are reached: pat-terns of nodal values that depend
+directly on the values of the input layer (the chosen coordinates). The
+current hype surrounding machine learning can be traced back to the
+success of deep networks in applications such as handwritten character
+recognition and speech recognition. These are areas where, despite
+decades of research, hand-designed representations and rule-based
+feature de-tection have failed to deliver success.
+
+9 Review problem: water waves
+
+We are all familiar with water waves occurring at the air-sea interface
+of oceans. In physics these waves are referred to as surface gravity
+waves, a terminology that stresses the fact that the restoration of the
+uid interface to equilibrium is due to gravity. For small amplitudes,
+that is for wave amplitudes small in comparison to the wavelength and
+small in comparison to the water depth, the propagation velocity of the
+water waves becomes independent of the amplitude. For large-scale waves
+occurring at ocean-air interfaces, also surface tension ef-fects and
+viscous eects can be neglected. The result is that propagation speed (or
+celerity) \emph{c} of these water waves depends only on the water depth
+\emph{h}, the wavelength \emph{λ}, and the gravitational acceleration
+\emph{g}. Below table lists some prop-agation speeds as function of
+water depth and wavelength. All units are SI units. The gravitational
+acceleration equals 9\emph{.}8m\emph{/}s2.
+\end{quote}
+
+23
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{h}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{λ}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{c}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+3.97
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+130.6
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+6.20
+\end{minipage} \\
+\midrule()
+\endhead
+4.11 & 98.2 & 6.27 \\
+5.03 & 97.6 & 6.90 \\
+8.92 & 104.7 & 8.94 \\
+22.7 & 180.1 & 13.6 \\
+11.4 & 78.5 & 9.40 \\
+47.7 & 289.5 & 18.7 \\
+19.3 & 67.8 & 10.0 \\
+23.4 & 63.2 & 9.83 \\
+23.6 & 59.2 & 9.54 \\
+44.2 & 109.3 & 13.0 \\
+34.2 & 79.6 & 11.1 \\
+27.5 & 61.4 & 9.75 \\
+29.3 & 54.9 & 9.24 \\
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: using a linear regression approach (Cf section 6) as well as
+an rep-resentation learning approach (Cf section 7), create predictive
+algorithms for the wave propagation speed \emph{c}.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+10
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Bias parameters
+\end{quote}
+\end{minipage} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.2375in,height=1.46805in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image21.png}
+\end{quote}
+\end{minipage}} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.6667} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+So far we have specied feedforward nets via their architecture and their
+weights. These weights are associated with each of the multipliers, the
+straight line seg-ments in the network diagrams. In literature on
+feedforward nets you will typi-cally come across additional tting
+parameters, the so-called biases. These bias parameters can be thought
+of as being associated with the rectiers, the wavy links in the network
+diagrams. For an articial neuron that receives inputs \emph{x}1 and
+\emph{x}2 with weights \emph{w}1 and \emph{w}2, respectively, a bias
+\emph{w}0 has the eect to produce an output \emph{g}(\emph{w}1\emph{x}1
++\emph{w}2\emph{x}2 +\emph{w}0). Such a non-zero bias can be represented
+via an additional link with weight equal to the bias that feeds in an
+additional input with value unity. (See diagram on the right.)
+Throughout this text, whenever we need non-zero biases, we will do so by
+including \textquotesingle unit inputs\textquotesingle.14
+\end{quote}
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Bias parameters are generally a necessity when modeling functional
+relation-ships that are heuristic in nature. Losely speaking, the need
+for bias parameters in heuristic models indicate eects not explicitely
+considered and modelled as a \textquotesingle background
+contribution\textquotesingle. In other words, under these conditions the
+need for bias parameters suggests one (or more) input parameters to be
+missing.
+
+However, also in scientic modeling exercises the need for a bias
+parameter can manifest itself. This is usually the case when the
+modeling exercise utilizes dimensionless parameters. Eectively, in such
+cases the bias parameter that
+
+14In the Euclidean distance exercise no biases were required. Non-zero
+bias parameters are required, however, if the function being modeled
+fails to observe scale invariance.
+\end{quote}
+
+24
+
+\begin{quote}
+is required represents an input parameter that is utilized as natural
+yardstick for rendering the scaling relation dimensionless. For
+instance, in the Euclidian distance exercise a bias parameter emerges
+when rendering the scaling relation \emph{d} = \emph{f}(\emph{n, m})
+dimensionless by measuring all distances in terms of \emph{n}, the
+larger of the two input distances: \emph{n}= \emph{f}(1\emph{,\sout{m}
+n}). Here the dependency on the rst argument of the function \emph{f}()
+manifests itself as a bias input. Of course one can write: \emph{n}=
+\emph{f}(\emph{\sout{m} n}), but in that case an auxilary unit input
+parameter (a bias parameter) need to be introduced when modeling the
+functional dependence of \emph{n}on\emph{\sout{m} n}.
+
+In applications where all inputs and outputs are presented in
+dimensionally homogeneous form (i.e. all expressed in terms of the same
+\textquotesingle yardstick\textquotesingle, as was the case in the
+Euclidian distance example), bias parameters are unwanted. The learning
+examples in this text are all best solved with ReLU nets operating on
+dimensionally homogeneous inputs, and void of any bias parameters.
+
+11 Expressive power
+
+Feedforward nets with hidden layers give us a universal approximation
+capabil-ity. More specically, the universal approximation
+theorem15states that every continuous function on a given domain can be
+approximated to any required degree of accuracy by a feedforward net
+with at least one hidden layer. This result holds for a wide range of
+activation functions that include the ReLUs used throughout this text.16
+The universal approximation theorem is non-constructive: it states that
+regardless the complexity of a function, a su-ciently large feedforward
+net containing at least one hidden layer can represent this function.
+However, it does not state how to arrive at such a representa-tion. The
+following sections will deal with the key question of how to arrive at
+the weights that make a feedforward net a suitable approximation to a
+given function.
+
+For functions of one variable, the universal approximation theorem can
+be understood intuitively by considering feedforward ReLU nets with a
+single hid-den layer as shown below.
+
+15K. Hornik, M. Stinchcombe, and H. White, "Multilayer feedforward
+networks are universal approximators", Neural Networks Vol. 2, 359 - 366
+(1989). G. Cybenko, "Approximation by superpositions of a sigmoidal
+function", Mathematics of Control, Signals and Systems Vol. 2, 303 - 314
+(1989).
+
+16M. Leshno, V.Y. Lin, A. Pinkus, and S. Schocken, "Multilayer
+feedforward networks with a nonpolynomial activation function can
+approximate any function", Neural Networks Vol. 6, 861 -867 (1993).
+\end{quote}
+
+25
+
+\includegraphics[width=4.41667in,height=2.58333in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image22.png}
+
+\begin{quote}
+Firstly, from this picture it should be clear that with a single layer
+of hid-den nodes any piecewise linear continuous function of one
+variable can be con-structed, provided a sucient number of hidden nodes
+is implemented. Here the general rule is that the implementation of
+\emph{N} kinks in the piecewise linear function requires \emph{N} hidden
+nodes (the case \emph{N} = 2 is shown in above picture). Secondly, to
+approximate any given function to a specied level of accuracy translates
+into a piecewise linear function with a specied minimum number of linear
+regions (i.e. a sucient number of kinks). The two statements combined
+form the bare essence of the universal approximation theorem for
+functions of a single variable. Similar considerations apply when
+considering functions depen-dent on multiple variables.
+
+In summary, the universal approximation theorem tells us that given a
+func-tion, there exist feedforward nets large enough to achieve any
+desired level of accuracy in approximating this function. However, the
+theorem doesn\textquotesingle t tell us how large these nets will be. If
+we restrict ourselves to a single layer of hid-den nodes, depending on
+the function to be approximated, we might need an excessive number of
+hidden nodes. For single-hidden-layer feedforward ReLU nets modeling
+functions of a single variable, this follows from the fact that
+dou-bling the number of linear regions requires a doubling of the width
+of the net. On the other hand, the same doubling of the number of linear
+regions can also be achieved by adding a hidden layer consisting of just
+two nodes.17Hence, a deeper net can simulate functions that would
+require exponentially more re-sources (exponentially more nodes and
+weights) when implemented as a shallow net. In crude terms, the improved
+representation power of deeper nets results from the deep hierarchical
+composition of the approximation function allowed by deep networks. In
+other words, a deep architecture allows the function to be learned to
+consists of a hierarchy of computations where the result of each
+computation feeds into a higher level computation, until the nal output
+is
+
+17G.F. Montufar, R. Pascanu, K. Cho, and Y. Bengio, "On the number of
+linear regions of deep neural networks", NIPS (2014).
+\end{quote}
+
+26
+
+\begin{quote}
+reached.
+
+The fact that deeper models tend to perform better is therefore not
+really dierent from the benets brought by using hierarchical
+computations in any computational models: allowing for the re-use of
+low-level computations creates eciency in code complexity. Practical
+experience with a variety of architec-tures on a wide variety of
+functional approximation tasks conrms that going from shallow to deeper
+nets, when done in the right way, results in better ap-proximations.
+
+12 Quantifying model performance
+
+In the Euclidian distance learning example we manually changed the
+weights \textbf{w} and tracked the accuracy of the t by visual
+inspection of a plot comprising all relevant dimensions in data space.
+This worked ne for that particular problem where the relevant data space
+consisted of only two dimensions. In the following we will be dealing
+with data spaces containing many more dimensions, and for such problems
+the approach of graphically tracking the accuracy of the t breaks down
+completely. Therefore, we will be using approaches for function tting
+that do not rely on visual inspections, and that can be automated. These
+approaches require a well-dened measure for function tting performance.
+
+The performance of a model in approximating a continuous function is
+con-veniently measured by the square errors of each of the modelled data
+points. For data point \emph{i} this square error is determined by the
+dierence between the modeled value \emph{f}(\emph{i}) \emph{N}, i.e. the
+value of the output node \emph{N} on the input \textbf{x}(\emph{i}), and
+the target value \emph{t}(\emph{i}) \emph{N}as follows:
+
+\emph{E}(\emph{i})= 1 2 \emph{f}(\emph{i}) \emph{N−t}(\emph{i}) (16)\\
+2
+
+Here, the factor1\emph{/}2 is included for convenience.
+
+For function tting problems where the target values cover a large
+dynamic range, and where a tting function with a small relative error is
+sought, it is generally advantageous to weight the square error (16)
+with the inverse of the square of the target value. This results in a
+relative square error metric
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{E}(\emph{i})=
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{f}(\emph{i}) \emph{N−t}(\emph{i})
+
+2
+
+\begin{quote}
+2 \emph{t}(\emph{i}) \emph{N}
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+2
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(17)
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+During training of the model, the square errors (16 or 17) are summed
+for all \emph{Ntrain Ntrain} training data points to form the squared
+training error: \emph{Etrain} = \emph{i}=1 \emph{E}(\emph{i}). A
+normalised squared training error is obtained by dividing by the number
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{Ntrain}
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(\emph{i})
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} \\
+\midrule()
+\endhead
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+of training samples: \emph{\textless{} E \textgreater train}=
+\end{quote}
+\end{minipage} & \emph{Ntrain} & \emph{i}=1 & \emph{E}. &
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Training amounts to
+\end{quote}
+\end{minipage} \\
+\multicolumn{5}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{1.0000} + 8\tabcolsep}@{}}{%
+reducing this squared training error. However, we want our model to
+perform} \\
+\bottomrule()
+\end{longtable}
+
+27
+
+\begin{quote}
+well not just on the training data, we really care about how it performs
+on unseen inputs. In other words, we want our model to generalize beyond
+the training data. To achieve this we estimate the generalization error
+of the model by measuring the normalised squared error on a test set
+consisting of \emph{Ntest}
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+not utilised in deriving the model=
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{Ntest}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+(\emph{i})
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+data points:\emph{test}=
+\end{quote}
+\end{minipage} & \emph{Ntest} & \emph{i}=1 & . So \\
+\multicolumn{4}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{1.0000} + 6\tabcolsep}@{}}{%
+typically prior to any training, the total available data is randomly
+split into} \\
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+two groups: \emph{Ntrain} data points to be used in training the model,
+and \emph{Ntest} data points not used during training and reserved for
+testing the generalization performance of the model. We encourage you to
+adhere to this practice for all the learning examples that follow.
+
+For a trained model the test error will typically be larger than the
+training error. A test error signicantly larger than the training error
+signies overtting. The reverse is also true: the absence of a signicant
+gap between the test error In this case and the training error
+demonstrates the absence of overtting.
+
+the model is either \textquotesingle right-tting\textquotesingle{} or
+undertting. The occurance of over- and undertting for a given data set
+can be controlled by tuning the capacity of the model. Below gure
+illustrates the tting behaviors of models that have too high, too low,
+or just the right capacity for the data available. In each of the plots,
+the training data are shown as blue dots, while the test data are
+represented by green dots. As can be seen very clearly, overtting
+results in a high variance between the t and the test data, while
+undertting gives rise to systematic errors between the t and the test
+data (as well as between the t and the training data).
+\end{quote}
+
+28
+
+\begin{quote}
+\includegraphics[width=5.05in,height=4.49444in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image23.png}
+
+The capacity of a model measures its ability to t a wide variety of
+functions. The capacity of a feedforward net is dependent on its
+architecture. In general, the capacity of a feedforward net increases
+with increasing depth and increasing width. Also increasing the density
+of connects between subsequent layers tends to increase the capacity of
+the net. An alternative means to control the capacity of a model (a
+feedforward net, or any other model) is achieved by regularizing the
+model. In the widest sense, regularization involves all measures aimed
+at reducing the gap between test error and training error. In this text
+we will not study regularization in detail, but in each of the practical
+examples that follow in this text, we will work hard to minimize the
+training error, while avoiding a gap between the test error and the
+training error to develop.
+
+13 Stochastic gradient descent
+
+In the Pythagorean distance learning example, we trained the network by
+visual inspection of the mismatches. Now that we have dened a quantative
+training error (see previous section), we no longer need to rely on
+visual inspection by humans and we can automate the training process. We
+seek the parameters
+\end{quote}
+
+29
+
+\begin{quote}
+\emph{Ntrain} \emph{Ntrain} 2 \textbf{w} for which the training error
+\emph{Etrain} = \emph{i}=1 \emph{E}(\emph{i})=1 2 \emph{i}=1
+\emph{f}(\emph{i}) \emph{N−t}(\emph{i}) is
+
+minimized. We can drive this training error to ever lower values by
+iteratively changing the weights \textbf{w} in the direction of steepest
+descent of the training error:
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{∂Etrain}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{∂}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{Ntrain}
+\end{minipage} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\emph{E}(\emph{i})= \emph{−µ}
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{Ntrain}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{∂E}(\emph{i})
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} \\
+\begin{minipage}[b]{\linewidth}\raggedright
+∆\textbf{w} = \emph{−µ}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+= \emph{−µ∂}\textbf{w}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{i}=1
+\end{minipage} & & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{i}=1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{∂}\textbf{w}\emph{.}
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+(18)
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.4286} + 4\tabcolsep}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Here the gradient in \textbf{w}-space is denoted by
+\end{quote}
+\end{minipage}} &
+\multicolumn{4}{>{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.5714} + 6\tabcolsep}@{}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+\emph{∂}\\
+\emph{∂}\textbf{w}, and the minus sign ensures
+\end{quote}\strut
+\end{minipage}} \\
+\multicolumn{7}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{1.0000} + 12\tabcolsep}@{}}{%
+changes in the direction of greatest descent (as opposed to the
+direction of} \\
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+greatest ascent). The multiplier \emph{µ} is known as the learning rate.
+This learning rate needs to be selected small enough to prevent
+instabilities in the training process, and large enough to avoid an
+excessive number of iterations towards the minimum training error.
+
+For small enough learning rates, the above gradient descent algorithm
+will converge to \textbf{w}-values for which the
+gradient\emph{\uline{∂Etrain}∂}\textbf{w} vanishes. This means that the
+above gradient descent algorithm will land us in a (local) minimum or in
+a saddlepoint. A (local) maximum can be excluded as the direction from
+which we have arrived at this particular point provides us with a
+direction in which the training error increases. Being in a local
+minimum would require walking away in any of the directions to lead to
+training error increases. Being in a saddle point would require no more
+than one direction in which the treaining error increases. In
+high-dimensional \textbf{w}-spaces, we therefore expect saddlepoints to
+occur much more frequently than local minima.
+
+The good news is that getting stuck in a saddlepoint can be avoided by
+incorporating a stochastic component in the gradient descent algorithm.
+The idea here is that such a stochastic component will prevent the
+iteration pro-cess \textquotesingle to freeze\textquotesingle{} on a
+saddle point, and rather to be \textquotesingle shaken
+into\textquotesingle{} directions from which paths towards further
+descent open up. Adding stochasticity to the learning process is
+conveniently done by sub-sampling the training error. In the most
+extreme case, these subsamples constitute individual data points. In
+other \emph{∂}\textbf{w}values have words, for making updates to the
+weights we don\textquotesingle t wait till
+all\emph{\uline{∂E}}(\emph{i}) been computed (see Eq. 18), but rather we
+make an update every time a new\emph{\uline{∂E}}(\emph{i})
+\emph{∂}\textbf{w} becomes available:\\
+∆\textbf{w}(i)= \emph{−µ∂E}(\emph{i}) (19)
+
+Typically, the order in which the samples \emph{i} are selected follows
+from a simple loop through a shued training set. One pass through the
+entire data set is referred to as a training epoch. At the start of each
+epoch the training set gets reshued.
+
+To build an intuition on gradient descent versus stochastic gradient
+descent, we revisit the linear regression treatment of the Euclidian
+distance problem (see section 5). For this problem, the training error
+\emph{E}(\emph{i})for each individual data
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+point \emph{i} is given by
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{E}(\emph{i})= 1 2
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{w}1\emph{x}(\emph{i})+ \emph{w}2\emph{y}(\emph{i})\emph{−}1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+2
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(20)
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+30
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Verify this expression by applying Eqs. (10) to the
+\textquotesingle unit return distance data\textquotesingle{} in section
+5.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+For simplicity we focus on just two \textquotesingle unit return
+distance data points\textquotesingle: (\emph{x}(1)\emph{, y}(1)) =
+(1\emph{,} 0), and (\emph{x}(2)\emph{, y}(2)) = (0\emph{.}8\emph{,}
+0\emph{.}6). By substituting these \emph{x} and \emph{y} values into Eq.
+(13) we obtain \emph{E}(1)(\emph{w}1\emph{, w}2) and
+\emph{E}(2)(\emph{w}1\emph{, w}2). Both error functions are displayed in
+below gure (the error \emph{E}(1)in the top left-hand side, and
+\emph{E}(2) in the top right-hand side). The total error \emph{E} =
+\emph{E}(1)+ \emph{E}(2)is shown in the bottom of the gure. For each of
+the gures identical color codings are used, with small error values are
+displayed in blue, and larger errors in red.
+\end{quote}
+
+\includegraphics[width=4.69583in,height=4.47639in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image24.png}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+The gradient descent (Eq.
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+11) and stochastic gradient descent (Eq.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+12)
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+algorithms create paths from red to blue in above 2D color maps. These
+paths are created by an iteration of small steps each of which is taken
+following the color gradient. The gradient descent algorithm creates a
+sequence of step from red to blue in the color map at the bottom. The
+stochastic gradient descent corresponds to a sequence of steps, with
+each color-gradient step executed based on either the top-left or
+top-right color map, where the choices between the left and right map is
+made at random.
+\end{quote}
+
+31
+
+\begin{quote}
+For feedforward nets more complex than a linear regression net with only
+two links, creating a color landscape for gradient descent would involve
+an unwieldy high-dimensional map (one dimension for each link with
+associated weight pa-rameter). This would not be very useful and neither
+would it be very instructive. Fortunately, we don\textquotesingle t need
+such a high-dimensional map, as the gradients in theérror landscape can
+be computed directly in a very ecient way. This is the subject of the
+next section.
+
+14 Backpropagation
+
+The stochastic gradient descent algorithm requires for each input data
+sample \textbf{x}\emph{i} full knowledge of the partial
+derivatives\emph{\uline{∂E}}(\emph{i})\emph{∂}\textbf{w}. The
+backpropagation algorithm18 provides us with these partial derivatives
+in just one single reverse sweep through the network. This is done by
+rst computing the partial derivatives of the error
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.7500} + 4\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{E}(\emph{i})with respect to the nodal values \emph{f}(\emph{i})
+\emph{n}:
+\end{quote}
+\end{minipage}} &
+\multirow{4}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1in,height=1.34444in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image25.png}
+\end{quote}
+\end{minipage}} \\
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{δ}(\emph{i}) \emph{n}:= \emph{∂E}(\emph{i})
+
+\emph{∂f}(\emph{i})
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{.}
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(21)
+\end{minipage} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.5000} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+For each input sample \emph{i} the error derivative \emph{δ}(\emph{i})
+\end{quote}
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+denotes the sensitivity of the
+\end{minipage} \\
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.7500} + 4\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+output error on small changes in the value of node \emph{n}. Once these
+error deriva-tives have been computed for all nodes (see below), the
+partial derivatives\emph{\uline{∂E}}(\emph{i})\emph{∂}\textbf{w} follow
+directly. This can be seen by considering a small portion of a
+feedfor-ward net as shown on the right.19We assume we have available the
+nodal value \emph{f}(\emph{i}) \emph{k} (following a forward pass with
+input \textbf{x}\emph{i}) as well as the error
+derivative\emph{δ}(\emph{i}) \emph{m}associated with node \emph{m}.
+Noting that any dependency of the output error on
+\end{quote}
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+the weight \emph{w}mk has to be passed on through the value of node
+\emph{m}, we can use the chain rule for dierentiation and obtain
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{∂E}(\emph{i})
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+=\emph{∂E}(\emph{i})
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{∂f}(\emph{i})
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+= \emph{δ}(\emph{i}) \emph{f} (\emph{i})
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(22
+\end{minipage} \\
+\midrule()
+\endhead
+\emph{∂}\textbf{w}mk & \emph{∂f}(\emph{i}) & \emph{∂}\textbf{w}mk &
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+\emph{m}
+\end{quote}
+\end{minipage} & (22 \\
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+It follows that, if for all nodes \emph{k} = 1\emph{, .., N} we are able
+to determine not only the values \emph{f}(\emph{i}) \emph{k} but also
+the error derivatives \emph{δ}(\emph{i}) \emph{m}, the gradient descent
+direction follows immediately.
+
+Starting point for the computation of the error derivatives is the
+observation that based on Eq. (21), the error derivative for the output
+node \emph{N} is given by
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{δ}(\emph{i}) \emph{N}:= \emph{∂E}(\emph{i})
+
+\emph{∂f}(\emph{i}) \emph{N}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+= \emph{f}(\emph{i}) \emph{N−t}(\emph{i})
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(23)
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+18David Rumelhart, Georey Hinton, and Ronald Williams: Learning
+representations by back-propagating errors, Nature Vol 323, p. 533 - 536
+(1986).
+
+19In diagrams showing small portions of feedforward nets, it is easy to
+lose sight of the fact that in these diagrams the feedforward direction
+is upward, from the inputs at the bottom to the output(s) at the top.
+\end{quote}
+
+32
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+Here we used Eq.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(16).
+\end{minipage} &
+\multicolumn{2}{>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.4000} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+Once the error derivatives are known for a given
+\end{minipage}} &
+\multirow{3}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.45in,height=1.675in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image26.png}
+\end{quote}
+\end{minipage}} \\
+\multicolumn{4}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.8000} + 6\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+layer, the error derivatives for the layer one step down follows from -
+again -applying the chain rule. What results is a reverse (downward)
+sweep through the network, referred to as backpropagation. This
+backpropagation starts from the top layer, and progresses down through
+lower layers until all hidden layers have been processed. For instance,
+if in the diagram on the right for input \emph{i} the error derivatives
+are known for the layer containing node \emph{n}, the error derivative
+for node \emph{m} in the layer below is obtained via
+\end{quote}
+\end{minipage}} \\
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.6000} + 4\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{δ}(\emph{i}) \emph{m}= \emph{δ}(\emph{i}) \emph{nh}(\emph{f}
+(\emph{i}) \emph{m})
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+(24)
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+where \emph{h}(\emph{.}) denotes the Heaviside step function:
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule()
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{h}(\emph{z}) =\emph{∂g}(\emph{z})\\
+\emph{∂z}
+\end{quote}\strut
+\end{minipage}} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+=
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+1
+\end{minipage} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{z ≥}0\\
+\emph{z \textless{}} 0
+\end{quote}\strut
+\end{minipage}} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+(25)
+\end{minipage}} \\
+& & \begin{minipage}[b]{\linewidth}\raggedright
+0
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Furthermore, if the error derivatives are known for the layer containing
+nodes \emph{m} and \emph{p}, the error derivative for node \emph{k} in
+the layer below is obtained via
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{δ}(\emph{i}) \emph{k}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+= \emph{δ}(\emph{i}) \emph{mwmk}+ \emph{δ}(\emph{i}) \emph{pwpk}
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(26)
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+In this way, via a top-down sweep through the network, the error
+derivatives\emph{∂}(\emph{i}) for all hidden nodes \emph{n} follow. With
+these error derivatives, and using Eq.
+
+(22) the stochastic gradient weight update rule Eq. (19) takes the form:
+
+∆\emph{wmk} = \emph{−µδ}(\emph{i}) \emph{mf} (\emph{i}) (27)
+
+The above can be summarized as follows: the gradient descent update of
+weight
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{wmk} based on data point \emph{i} is given by Eq. (27). In this
+equation the nodal values \emph{f}(\emph{i}) \emph{k} follow from a
+forward pass with inputs \textbf{x}(\emph{i}), while the nodal error
+deriva-
+
+tives \emph{δ}(\emph{i}) \emph{m}follow from a backward pass based on
+the propagation rule (24, 26).
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: Later in this text, for instance in the treatment of
+convolutional neural nets, we will encounter feedforward nets that have
+multiple weights constrained to the same value. How does the above
+weight update rule (27) change if two weights are part of the update
+process, but are required to have identical values?
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+15
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Putting everything together: regression with
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+feedforward nets
+
+The combination of Eqs. (23), (24), (26), and (27) captures the full
+backpropagation-enabled stochastic gradient descent algorithm.
+
+Based on the material discussed so far, the following list of steps
+emerges as a useful recipe for regression with feedforward nets:
+\end{quote}
+
+33
+
+\begin{quote}
+Step 1: For the problem at hand: determine a complete set of input
+variables and output variable(s). The set is complete when all inputs
+are included that are required to (at least in principle) determine the
+output.
+
+Step 2: Use dimensional analysis to cast input and output data in
+dimensionally homogeneous form (e.g. inputs and outputs all expressed as
+a length). When done, you have selected the homogeneous coordinates in
+which the poblem is to be described, and your regression problem is
+suitable to be attacked by a feedforward net free of bias parameters and
+utilising simple ReLU transforms as non-linear elements.
+
+Step 3: Study the symmetries that apply: which transformations of the
+inputs leaves the output(s) invariant? As we saw in the Euclidian
+distance exercise, often the output is invariant under permutations of
+(some of) the inputs. Aim to redene your inputs such that the
+invariances observed become \textquotesingle hard wired\textquotesingle.
+
+Step 4: Check the available data. Is the data complete: does every
+output come with a complete set of inputs? Clean up the data where
+required. Taking into account the symmetries discovered in step 3), is
+the data that is left suciently rich to attempt a regression exercise?
+Seek more data if the answer is \textquotesingle no\textquotesingle.
+
+Step 5: Split the data in a training set and a test set.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Step 6: Dene a feedforward net architecture.
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Start simple!
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+A linear (sin-
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+gle linear layer) feedforward net can provide a useful benchmark to
+check the performance of more complex nets against.
+
+Step 7: Implement stochastic gradient descent with backpropegation for
+the architecture and training data selected. This step can be coded by
+hand, or be implemented using an available deep-learning platform (e.g.
+Keras.
+\end{quote}
+
+Step 8: Train for multiple epochs (multiple full passes through all
+training
+
+\begin{quote}
+data).
+
+Step 9: Critically analyse the results. Use the training errors and test
+errors as function of the number of epochs of training to identify
+under/overtraining.
+
+Step 10: Repeat steps 6-9 as often as required.
+\end{quote}
+
+34
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: Revisit the Euclidian distance problem using the above recipe.
+Don\textquotesingle t use a deep learning platform but create your own
+piece of code (in Python or any other prototyping environment of your
+preference) based on the above pseudo code. First reproduce the results
+obtained in section 6. Then improve the accuracy by increasing 1) the
+width of the net, 2) the depth of the net. How far can you go without
+getting into overtraining problems?
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+16
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Learning problem: pendulum frequency
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+A simple pendulum (see gure) consists of a massless arm of xed length
+\emph{ℓ}connecting a massive bob to a frictionless pivot. The bob moves
+without friction along a circular path. At maximum amplitude the bob is
+positioned a distance 2\emph{d} below the apex of this circle. A
+gravitational acceleration \emph{g} points downward. What is the angular
+frequency \emph{ω} of oscillation?
+
+\includegraphics[width=2.94444in,height=2.23055in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image27.png}
+
+Starting point is the set of three parameters that x the pendulum
+frequency: \emph{g}, \emph{d}, and \emph{ℓ}. Note that the problem is
+fully determined in terms of accelerations and physical dimensions. More
+in particular, the mass of the bob does not aect
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+the frequency. First we recall the well-known small amplitude (\emph{ℓ−d
+≪ℓ}) result\emph{ω ≈ω}+ = and a dimensionless variable measuring the
+maximum displacement, for instance \emph{g/ℓ}. One could express the
+pendulum frequency as a function of \emph{ω}+
+
+the ratio \emph{d/ℓ}. However, keeping in mind that dimensionally
+homogeneous input-output pairs work well in neural net modeling, we dene
+the auxiliary frequency\emph{ω−}= \emph{ω}+ \emph{d/ℓ}= \emph{gd/ℓ}2.
+Physically, the parameter \emph{ω−}can be interpreted as the
+small-amplitude frequency for the pendulum when placed in a
+reduced-gravity environment with gravitational acceleration
+\emph{g′}=\emph{\uline{d}ℓg}. Next, we seek a description of \emph{ω},
+the large-amplitude frequency of oscillation of the pendulum subject to
+gravitational acceleration \emph{g}, as a function of \emph{ω}+ and
+\emph{ω−}.
+
+Working with \emph{ω}+ and \emph{ω−}as inputs, it follows that the
+function \emph{ω}(\emph{ω}+\emph{, ω−}) must be a homogeneous function
+of its arguments: \emph{ω}(\emph{λω}+\emph{, λω−}) =
+\emph{λω}(\emph{ω}+\emph{, ω−}). As a consequence, to obtain a t to this
+function, a feedforward net based on ReLU\textquotesingle s and void of
+bias parameters can be used. Furthermore, for training
+\end{quote}
+
+35
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{ω}+
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{ω}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+\emph{ω−}
+\end{quote}
+\end{minipage} \\
+& \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+purposes reduced data (e.g. data with all frequencies measured in units
+of \emph{ω}+) suces. The table on the right-hand side shows \emph{ω} for
+various values of \emph{ω−}(and\emph{ω}+ = 1). This data is plotted in
+the gure below.
+
+\includegraphics[width=3.63889in,height=2.69722in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image28.png}
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+The pendulum amplitude increases with increasing \emph{ω}+\emph{/ω−}.
+Explain why this is the case. What is the largest angular deection
+covered by the data in the
+
+\begin{quote}
+table?
+\end{quote}
+
+Exercise 1: The symbols in above diagram are close to lining up along a
+
+straight line. This suggests that a linear net would work well. Verify
+that the
+
+\begin{quote}
+linear relation \emph{ω} = 0\emph{.}460\emph{ω}+ +
+0\emph{.}544\emph{ω−}ts the above data with an RMS error of 0.0020.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.7500} + 4\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise 2: As inputs for the feedforward net we made the choice
+\emph{ω}+ =
+\end{quote}
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{g/ℓ}
+\end{minipage} \\
+\midrule()
+\endhead
+\multicolumn{4}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{1.0000} + 6\tabcolsep}@{}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+and \emph{ω−}= \emph{gd/ℓ}2which ensures an unidimensional input-output
+set. Would
+\end{quote}
+
+the quality of t have been markedly dierent if the parametrization of
+the
+\end{minipage}} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.5000} + 2\tabcolsep}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+inputs would have followed an alternative choice (such as: \emph{ω}+ =
+\end{quote}
+\end{minipage}} &
+\multicolumn{2}{>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.5000} + 2\tabcolsep}@{}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+\emph{g/ℓ}and
+\end{quote}
+\end{minipage}} \\
+\emph{ω−}= &
+\multicolumn{3}{>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.7500} + 4\tabcolsep}@{}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+\emph{g/d}) that also honors unidimensionality?
+\end{quote}
+\end{minipage}} \\
+\bottomrule()
+\end{longtable}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+We can get an improved t by using a non-linear (multilayer) feedforward
+net. The small two-layer net shown on the right yields an accuracy of t
+with RMS=0.0005.
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.29167in,height=2.37778in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image29.png}
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Explain why the absolute values of the weights in the top layer can
+always be chosen to equal unity.
+
+Exercise 1: Verify that on the above data, the RMS error for this
+feedforward net indeed is as small as 0.0005.
+
+Exercise 2: The ReLU on the left-hand side never receives a negative
+number a input. Explain why this is the case. Based on this observation,
+can you simplify the network?
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+36
+
+\begin{quote}
+17 Review problem 1: triangle area
+\end{quote}
+
+You are tasked to generate a feedforward net that predicts with an
+accuracy of
+
+2\% the area \emph{S} for any triangle based on its edge lengths
+\emph{a}, \emph{b} and \emph{c}. As training
+
+\begin{quote}
+data, the 36 primitive Heronian triangles20with area less than 200 are
+given:
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{a}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{b}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{c}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{S}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+5
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+4
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+3
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+6
+\end{minipage} \\
+\midrule()
+\endhead
+6 & 5 & 5 & 12 \\
+8 & 5 & 5 & 12 \\
+15 & 13 & 4 & 24 \\
+13 & 12 & 5 & 30 \\
+17 & 10 & 9 & 36 \\
+26 & 25 & 3 & 36 \\
+20 & 15 & 7 & 42 \\
+13 & 13 & 10 & 60 \\
+17 & 15 & 8 & 60 \\
+24 & 13 & 13 & 60 \\
+29 & 25 & 6 & 60 \\
+20 & 13 & 11 & 66 \\
+30 & 29 & 5 & 72 \\
+15 & 14 & 13 & 84 \\
+21 & 17 & 10 & 84 \\
+25 & 24 & 7 & 84 \\
+35 & 29 & 8 & 84 \\
+25 & 17 & 12 & 90 \\
+53 & 51 & 4 & 90 \\
+37 & 20 & 19 & 114 \\
+17 & 17 & 16 & 120 \\
+30 & 17 & 17 & 120 \\
+39 & 25 & 16 & 120 \\
+21 & 20 & 13 & 126 \\
+41 & 28 & 15 & 126 \\
+52 & 51 & 5 & 126 \\
+30 & 25 & 11 & 132 \\
+37 & 26 & 15 & 156 \\
+51 & 40 & 13 & 156 \\
+25 & 25 & 14 & 168 \\
+39 & 35 & 10 & 168 \\
+48 & 25 & 25 & 168 \\
+37 & 30 & 13 & 180 \\
+41 & 40 & 9 & 180 \\
+65 & 55 & 12 & 198 \\
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+20Heronian triangles are triangles with integer edge lengths and integer
+areas. A Heronian
+
+triangle is primitive if the integer edge lengths have no common divisor
+larger than unity.
+\end{quote}
+
+37
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule()
+\multicolumn{5}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.8333} + 8\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Create your own test data starting from pairs (\emph{a, h}) and using
+the expression for the area of an isosceles triangle:
+\end{quote}
+\end{minipage}} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=0.89444in,height=1.375in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image30.png}
+\end{quote}
+\end{minipage}} \\
+\multirow{3}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\emph{S} = 1 2\emph{ah, b} = \emph{c} =
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} &
+\multirow{3}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+(28)
+\end{minipage}} \\
+& \begin{minipage}[b]{\linewidth}\raggedright
+\emph{a}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
++ \emph{h}2
+\end{minipage} & & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=0.89444in,height=1.375in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image30.png}
+\end{quote}
+\end{minipage} \\
+& \begin{minipage}[b]{\linewidth}\raggedright
+2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=0.89444in,height=1.375in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image30.png}
+\end{quote}
+\end{minipage}} \\
+\multicolumn{5}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.8333} + 8\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+You can perform strict tests by implementing large contrasts between the
+\emph{a}
+\end{quote}
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+and \emph{h} values.
+
+18 Temporal dierence training
+
+In all previous chapters, we have limited ourselves to weight updating
+via su-pervised learning. For each instance of input data a desired
+output value was available, and the network weights got iteratively
+updated so as to reproduce at the output the desired values for each of
+the various inputs. One can think of the desired output value for each
+of the input samples as a target value provided by an oracle. The oracle
+providing target values can be experimentation and/or physics-based
+simulation.
+
+However, in many applications an oracle is not available. An example
+be-ing the evaluation of board positions in games like chess and Go. Can
+we, in the absence of an oracle, still make meaningful updates to the
+net and thereby train it for the use in evaluating board positions? To
+make improvements to the weights using gradient descent methods, we need
+target values for the output node(s). Intuitively it should be clear
+that we don\textquotesingle t really need perfect tar-get values. All
+that is needed at each stage of the iterative training is target values
+that provide an improvement compared to the output values computed by
+the network. Temporal dierence learning provides a framework for such a
+weights update strategy. Temporal dierence learning has been used by
+Google DeepMind in realising their super-human Go-playing neural net.
+This learning method is based on a bootstrapping mechanism21that can be
+summarized as "improving your guess based on a later guess". It can be
+interpreted as a su-pervised learning process in which the target value
+for a prediction is a later prediction presumed to be closer to the
+truth. Here we deal with temporal dif-ference learning dened in a wider
+context, where a so-called renormalization ow takes the role of temporal
+evolution.
+
+The key idea common to any renormalization process is the fact that
+while most physical systems are characterized by many parameters, we
+seldomly are interested in each and every parameter. Often our interest
+focusses on a few or just a single parameter(s). Obviously, multiple
+parameter settings will lead to the exact same value for the
+parameter(s) of interest. In renormalization
+
+21"Bootstrapping" or "pulling oneself up by one\textquotesingle s
+bootstraps": achieving an action that seems impossible without invoking
+additional resources.
+\end{quote}
+
+38
+
+\begin{quote}
+approaches one seeks transformations in parameter space that leaves the
+pa-rameter(s) of interest invariant. The paths in parameter space traced
+out under such renormalization transformations are referred to as
+renormalization ows. Knowledge of such renormalization ows enables
+temporal-dierence type learn-ing.22Renormalization represent a powerful
+concept for theoretical and numeri-cal analysis in many areas of
+physics. Renormalization ows are often the result of a coarse-graining
+(upscaling) transformation in parameter space. However, this need not be
+the case, and what is a suitable renormalization transformation will
+very much depend on the details of the problem at hand. To clarify the
+core idea, we look at a very simple example.
+
+Consider the following alternating series:
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.0625}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+99
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
++
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+99
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+99
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+3
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+99
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+4
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+99
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+5
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
++
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+(29
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\multirow{3}{*}{1 \emph{−}} & \multirow{3}{*}{100} & \multirow{3}{*}{+}
+& 100 & & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+\emph{−}
+\end{quote}
+\end{minipage} & 100 & & & 100 & &
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+\emph{−}
+\end{quote}
+\end{minipage} & \multirow{3}{*}{100} & \multirow{3}{*}{} &
+\multirow{3}{*}{\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
++ \emph{· · ·}
+\end{quote}
+\end{minipage}} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+(29
+\end{quote}
+\end{minipage} \\
+& & &
+\multicolumn{9}{>{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.5625} + 16\tabcolsep}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+1 \emph{−}1 2 + 1 3\emph{−}1 4 + 1 5\emph{−}1 6 + \emph{· · ·}
+\end{quote}
+\end{minipage}} & & & & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+(30)
+\end{quote}
+\end{minipage} \\
+& & &
+\multicolumn{9}{>{\raggedright\arraybackslash}p{(\columnwidth - 30\tabcolsep) * \real{0.5625} + 16\tabcolsep}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+1 \emph{−}1 3 + 1 5\emph{−}1 7 + 1 9\emph{−}1 11 + \emph{· · ·}
+\end{quote}
+\end{minipage}} & & & & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+(31)
+\end{quote}
+\end{minipage} \\
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+These are all slowly converging. The question arises if we could
+estimate the sums of such series based on just the rst terms. To do so
+we write the general series:\\
+\emph{S} = \emph{a}0 + \emph{a}1 + \emph{a}2 + \emph{a}3 + \emph{· · ·}
+(32)
+
+where subsequent \emph{ak}\textquotesingle s are constrained to have
+alternating signs: \emph{akak}+1 \emph{\textless{}} 0 for all \emph{k} =
+0\emph{,} 1\emph{,} 2\emph{, · · ·} . We dene the remainder \emph{R}
+after \emph{k} terms, and write:
+
+\emph{S} = \emph{a}0 + \emph{a}1 + \emph{· · ·} + \emph{ak−}2 +
+\emph{ak−}1 + \emph{R}(\emph{ak, ak}+1\emph{, · · ·} ) (33)
+
+A natural \textquotesingle renormalization
+transformation\textquotesingle{} presents itself: reduce the number of
+terms in the partial sum by reducing \emph{k} to \emph{k −}1 in the
+above expression:
+
+\emph{S} = \emph{a}0 + \emph{a}1 + \emph{· · ·} + \emph{ak−}2 +
+\emph{R}(\emph{ak−}1\emph{, ak, · · ·} ) (34)
+
+We conclude that
+
+\emph{R}(\emph{ak−}1\emph{, ak, · · ·} ) = \emph{ak−}1 +
+\emph{R}(\emph{ak, ak}+1\emph{, · · ·} ) (35)
+
+We now make the bold approximation that the remainder \emph{R} can be
+estimated based on retaining only its rst two arguments:23
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{R}(\emph{x}1\emph{, x}2\emph{, x}3\emph{, · · ·} )
+\emph{≈R}(\emph{x}1\emph{, x}2)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(36)
+\end{minipage} \\
+\midrule()
+\endhead
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{1.0000} + 2\tabcolsep}@{}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+22Although a better name would be "renormalization learning", here we
+stick to the histor-
+\end{quote}
+\end{minipage}} \\
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+ical terminology "temporal-dierence (TD) learning". In original TD
+learning, the parameter of interest is a late-time behaviour of a
+dynamic system, and the renormalization transforma-tion corresponds to a
+shift to later times.
+
+23The discusion can easily be generalized to estimates that retain more
+terms. This results in ever more accurate estimates for the series sums.
+\end{quote}
+
+39
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Based on the renormalization transformation (35), we can train a
+feedforward net to render the approximation \emph{R}(\emph{x, y}) for
+the remainder. To see how this works, let\textquotesingle s consider the
+most simple feedforward net that can be used for this task: a linear
+regression net with two input variables (see gure on the right). Once
+the weights in this net have been initialized, we have a predictor for
+remainders in the series \emph{S}. This predictor might be rather lousy,
+but it still can be treated as a predictor. If at a given stage of
+training the feedforward net acts as a predictor
+\emph{R}(\emph{ak−}1\emph{, ak}), we can create a better predictor by
+feeding the same net not with the inputs \emph{ak−}1 and \emph{ak}, but
+rather with the inputs \emph{ak} and \emph{ak}+1, and by adding a term
+\emph{ak−}1 to the resulting output (Cf. Eq. 35). Therefore, we can
+train the neural net (make updates to its weights) by using the updating
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.18194in,height=1.31944in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image31.png}
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+mechanism depicted in below gure.
+
+\includegraphics[width=3.74167in,height=2.45in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image32.png}
+
+Eectively, what we achieve here is a bootstrapping process in which an
+ever
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+better predictor is created by iteratively training this predictor on
+the outcome
+
+of the same predictor applied to later data.24The error measure in the
+dia-
+
+gram on the left of above gure equals\uline{1}
+2(\emph{R}(\emph{ak−}1\emph{, ak}) \emph{−ak−}1 \emph{−R}(\emph{ak,
+ak}+1))2 =
+
+error for a number of input sets (\emph{\{ak−}1\emph{, ak,
+ak}+1\emph{\}}. 2(\emph{w}1(\emph{ak−}1 \emph{−ak}) + \emph{w}2(\emph{ak
+−ak}+1) \emph{−ak−}1)2. The task now is to minimize this We restrict
+these inputs
+
+to the alternating geometric series \emph{ak} = (\emph{−α})\emph{k}. For
+alternating geometric se-ries input, it follows that the corresponding
+error measure is minimized for
+
+\emph{w}1 \emph{−αw}2 = obtain two linear equations for the two unknowns
+\emph{w}1 and \emph{w}2, with the solution 1+\emph{α}. 1 Using the two
+\emph{α}-values 100and 99 100as input data,25 we
+
+\emph{w}1 = 0\emph{.}7538 and \emph{w}2 = 0\emph{.}2538.
+
+The result is that summing the series \emph{S′}= 1 \emph{−}99 98 98 100+
+100 2 \emph{−} 100 3 + \emph{· · ·} 99 99
+
+as well as the series \emph{S′′}= 1 \emph{−}98 processing the rst two
+terms in either series: \emph{S′}= \emph{w}1(1) + \emph{w}2(\uline{99}
+100+ 100 2 \emph{−}100 3 + \emph{· · ·} can be done by just
+\end{quote}
+
+100) = 0\emph{.}7538 +
+
+\begin{quote}
+0\emph{.}2538\emph{\sout{−}}\uline{99} 100 = 0\emph{.}5025, and
+\emph{S′′}= \emph{w}1(1) + \emph{w}2(\emph{−}98 100) = 0\emph{.}7538 +
+0\emph{.}2538\emph{−}98 100 =
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+24Here \textquotesingle later\textquotesingle{} means
+\textquotesingle later\textquotesingle{} in the renormalization ow
+(35)\\
+25We deliberately select values for which the sum converges slowely.
+\end{quote}
+
+40
+
+\begin{quote}
+0\emph{.}5051. Note that we obtain these results without ever having
+explicitly summed either of these two series. All we have considered is
+a few subsequent terms in both series. For alternating series that
+don\textquotesingle t form part of the input data, the summation is not
+exact, but generally provides a marked improvement over straightforward
+computation of partial sums. For instance, the result obtained by
+considering just the rst four terms of the series (31) equals the
+partial sum of the rst 56 terms of this series:26
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+1 \emph{−}\uline{1} 3+\sout{1} 5\emph{−}\uline{1} 7+\sout{1} 9\emph{−}1
+11+ \emph{· · ·} + 109\emph{−}111= 0\emph{.}7809 1 1
+
+1 \emph{−}\uline{1} 3+ \emph{w}1\\
+\uline{1}
+
+5 + \emph{w}2 \emph{−}1 7 = 0\emph{.}7809
+
+It might seem remarkable that a simple linear network with only two
+input
+\end{quote}\strut
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+nodes generalizes far beyond the two series used in tuning the network.
+The underlying reason for this striking succes is that via TD learning,
+we happen to have rediscovered Euler transforms as an acceleration
+technique for summing alternating series.
+
+19 Once more: pendulum frequency
+
+In section 16 we created small networks for the prediction of pendulum
+frequen-cies for large-amplitude oscillations. Starting point consisted
+of a data set of accurate pendulum frequencies. What if such a data set
+is not available? Can we use some form of TD learning to train networks
+in predicting pendulum frequencies? This indeed is the case. Key point
+again is to note is that our interest focuses on just a single
+parameter, the oscillation frequency. Multiple input pairs
+(\emph{ω}+\emph{,ω−}) will yield the same oscillation frequency
+\emph{ω}. This is made explicit in below gure.
+
+26Note that although both results agree down to the fourth digit, the
+agreement with the innite sum, \emph{π/}4 = 0\emph{.}7854, does not go
+further than the second digit. This once more is an indication of the
+very slow convergence of this series.
+\end{quote}
+
+41
+
+\begin{quote}
+\includegraphics[width=4.39167in,height=2.73333in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image33.png}
+
+same pendulum frequency. The existence of such
+\textquotesingle equi-frequency curves\textquotesingle{} is in Here the
+curves with arrowheads connect points in \emph{ω}+\emph{−ω−}space with
+the
+
+itself far from remarkable. What is remarkable, however, is the fact
+that a straigthforward prescription exists for adjusting pendulum
+parameters in such a way that the pendulum frequency remains unchanged.
+Iterating this prescrip-tion causes a walk along the equi-frequency
+curves in the directions indicated by the arrowheads. This walk along
+equi-frequency paths can be interpreted as an example of a
+renormalization ow. The renormalization ow for pendulum frequencies
+hinges on an expression of pendulum frequencies in terms of elliptic
+integrals, and goes back to the early work on elliptic integrals by
+Lagrange and Gauss.
+
+Without going into details of the derivation,27we present the
+transforma-tions that leave the pendulum frequency unchanged. These
+transformations are particularly elegant when expressed in terms of in
+\emph{ω}+ and \emph{ω−}:
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{ω′}+= 1 2 (\emph{ω}+ + \emph{ω−}) \emph{, ω′−}=
+\emph{√ω}+\emph{ω−}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(37)
+\end{minipage} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.34167in,height=1.33472in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image34.png}
+\end{quote}
+\end{minipage}} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.6667} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+This so-called AGM iteration28converges quadratically towards the line
+\emph{ω}+ =\emph{ω−}= \emph{ω}0 . The points on this lines form
+stationairy points for the AGM trans-formation. These points correspond
+to small angle (linear) oscilations for which we know the exact
+solution: \emph{ω}(\emph{ω}0\emph{, ω}0) = \emph{ω}0. This result is all
+we need to train a net for predicting pendulum frequencies.
+
+To see how this works, let\textquotesingle s consider the most simple
+feedforward net that can be used for crude pendulum frequency
+predictions: a linear regression net with two input variables (see gure
+on the right). We could train the feedforward net
+\end{quote}
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+on the right in making pendulum frequency predictions, by providing as
+target
+
+27For details, see: Shaun Bullett and Jaroslav Stark: "Renormalizing the
+Simple Pendu-lum", SIAM Review, Vol. 35, No. 4 (Dec., 1993), pp.
+631-640.\\
+28AGM stands for arithmetic-geometric mean.
+\end{quote}
+
+42
+
+\begin{quote}
+values the end points of the AGM iteration (37). However, we can also
+train the net using the AGM iteration equations themselves. This is
+based on the fact that once the net has been initialized, we have a
+predictor for pendulum frequencies. This predictor might be quite lousy,
+but it can nevertheless be treated as a predictor. If at a given stage
+of training the feedforward net acts as a predictor
+\emph{ω}(\emph{ω}+\emph{, ω−}), we can create a better frequency
+predictor by feeding this net not with the inputs \emph{ω}+ and
+\emph{ω−}, but rather with the renormalized inputs\uline{1} 2(\emph{ω}+
++ \emph{ω−}) and \emph{√ω}+\emph{ω−}. Therefore, we can train the neural
+net (make updates to its weights) by using \emph{ω}the output. This
+updating mechanism is depicted in below gure. 2(\emph{ω}+ + \emph{ω−})
+\emph{, √ω}+\emph{ω−} as target value for
+
+\includegraphics[width=4.05in,height=2.51667in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image35.png}
+
+This bootstrapping scheme is rendered unambigious by also using the
+rela-tion \emph{ω}(\emph{ω}0\emph{, ω}0) = \emph{ω}0 as a data point
+(target value) in the training process.29 To demonstrate that the above
+temporal-dierence bootstrapping works, we create color maps for the
+training error (as we did in section 11 for the
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule()
+\multicolumn{4}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{1.0000} + 6\tabcolsep}@{}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+Euclidian distance problem). We focus on just two inputs: : (\emph{ω}(1)
++\emph{, ω}(1)\emph{−}) = (3\emph{,} 3),
+
+\begin{quote}
+and (\emph{ω}(2) +\emph{, ω}(2)\emph{−}) = (32\emph{,} 18). Based on the
+above, for the rst input we have
+\end{quote}
+
+the target value \emph{t}(1)= 3, and for the second input we have the
+target value
+\end{minipage}} \\
+\midrule()
+\endhead
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+\emph{t}(2)= \uline{1}
+
+2 \emph{ω}(2) ++ \emph{ω}(2)\emph{−} \emph{w}1 +
+
+\emph{E}(1)and \emph{E}(2)are given by:
+\end{quote}
+\end{minipage} & \emph{ω}(2) +\emph{ω}(2)\emph{−w}2. &
+\multicolumn{2}{>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.5000} + 2\tabcolsep}@{}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+It follows that the training errors
+\end{quote}
+\end{minipage}} \\
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.7500} + 4\tabcolsep}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\emph{E}(1)=\uline{1} 2(3\emph{w}1 + 3\emph{w}2 \emph{−}3)2
+
+\begin{quote}
+\emph{E}(2)=\uline{1} 2((32\emph{w}1 + 18\emph{w}2) \emph{−}(25\emph{w}1
++ 24\emph{w}2))2 =\sout{1} 2(7\emph{w}1 \emph{−}6\emph{w}2)2
+\end{quote}
+\end{minipage}} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+(38)\\
+(39)
+\end{quote}\strut
+\end{minipage} \\
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Both error functions are displayed in below gure (the error
+\emph{E}(1)in the top left-hand side, and \emph{E}(2)in the top
+right-hand side). The total error \emph{E} = \emph{E}(1)+
+
+29Alternatively, one can train with just the renormalization iteration,
+and add in the relation\emph{ω}(\emph{ω}0\emph{, ω}0) = \emph{ω}0 as a
+post-training normalization condition.
+\end{quote}
+
+43
+
+\begin{quote}
+\emph{E}(2)is shown in the bottom of the gure. For each of the gures
+\emph{w}1-values are shown on the vertical axes, \emph{w}2-values on the
+horizontal axes. The color codings indicate error size, with small error
+values displayed in blue, and larger errors in
+
+red.\includegraphics[width=4.9875in,height=4.41111in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image36.png}
+
+From this gure it should be clear that gradient descent (either
+deterministi-cally by descending from red to blue colors in the bottom
+plot, or stochastically by descending from red to blue bolors in either
+of the upper plots select repet-itively at random) will result in a
+well-dened training result. It can easily be
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+6 checked that Eqs. (38) and (39) attain their minimum for \emph{w}1 =
+
+7 13\emph{≈}0\emph{.}46, and \emph{w}2 =
+\end{quote}
+
+result presented in section 16. 13\emph{≈}0\emph{.}54. This results
+nicely coincides with the supervised learning
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+The AGM renormalisation transformation (37) for the non-linear pendulum
+operates in(\emph{ω}+\emph{, ω−}) space. of the gravitational
+acceleration and the maximum amplitude. Express the It can also be
+expressed as a renormalisation
+
+\begin{quote}
+AGM transformation in terms of a renormalisation in (\emph{d, g})
+parameter space. Show that the renormalisation ow corresponds to a
+decrease in both the gravitational acceleration and the maximum
+deection.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+The above pendulum frequency example, as well as the series summation
+\end{quote}
+
+44
+
+\begin{quote}
+example discussed in the previous section, demonstrate the essence of
+temporal dierence learning. The idea applies in principle to any problem
+where a t is sought to data that can be obtained from an iterative
+process. In such regression applications, often a t more accurate than a
+linear t is sought. This is where temporal dierence learning really
+shines, as the technique is not limited to linear nets, but rather
+combines well with deep feedforward nets. The same core idea can be used
+for real-time control and optimisation of instable dynamical systems. An
+example is discussed in the next section.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+20
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Review problem 2: inverted pendulum
+\end{quote}
+\end{minipage} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.41667in,height=1.81806in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image37.png}
+\end{quote}
+\end{minipage}} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.6667} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+When walking, we maintain balance. We manage to do so following a
+trial-and-error learning process. When balancing a pole at our ngertip,
+we accomplish this also via trial-and-error. Here we consider a
+prototypical task of balance control: balancing an inverted pendulum on
+a moving cart. Can you do so by an automated trial-and-error process,
+and without making use of a predictive model of the balancing dynamics?
+In other words: can you keep the pedulum in inverted position via a
+self-learned control dynamics?
+
+The inverted pendulum task involves a pendulum of length \emph{ℓ}hinged
+to the top of a wheeled cart that travels along a track, as shown in the
+gure on the right. The cart and pendulum are constrained to move within
+the plane of the
+\end{quote}
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+gure. The bob at the end of the pendulum is subject to a constant
+gravitational acceleration \emph{g}, and the cart movement is controlled
+by a horizontal acceleration \emph{a}(\emph{t}). This results in an
+acceleration of the angle \emph{θ}(\emph{t}) between the pendulum
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+and vertical:
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{d}2\emph{θ}\\
+\emph{dt}2 = \emph{gℓsinθ −aℓcosθ}
+\end{quote}\strut
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(40)
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+The question now is: how can control be accomplished by applying
+suitable accelerations \emph{a}(\emph{t}), when all that is known are
+the instantaneous values of the
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.6667} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+state variables \emph{θ}(\emph{t}) and\emph{dθ}(\emph{t}) \emph{dt}?
+
+We rst discretize equation (40) using discrete time steps \emph{δt}:
+\end{quote}
+\end{minipage}} &
+\multirow{2}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+(41)
+\end{quote}
+\end{minipage}} \\
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{θt}+1 = 2\emph{θt −}2\emph{θt−}1 + (\emph{δt})2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+(\emph{g · sinθt −at · cosθt})
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Once \emph{θt}+1 has been computed, the discretized angular velocity
+∆\emph{t}+1 :=\emph{θt}+1 \emph{−θt} immediately follows. The problem
+statement is now: given \emph{θt} and ∆\emph{t}, which acceleration
+\emph{at} should be applied in order to optimize the balancing of the
+pendulum? As performance measure we introduce the cost-to-go:
+
+\emph{C} (\emph{θt, θt}+1\emph{, · · ·} ) = (1 \emph{−cosθt}) + \emph{γ}
+(1 \emph{−cosθt}+1) + \emph{γ}2(1 \emph{−cosθt}+2) + \emph{· · ·} (42)
+
+Here 0 \emph{\textless{} γ} ⩽1 represents a xed discount factor. The use
+of a discount factor smaller than unity implies that we are focused on
+what happens next and that we are less concerned about the performance
+in a more distant future. Regardless the precise value of the discount
+factor \emph{γ}, the cost-to-go \emph{C} vanishes
+\end{quote}
+
+45
+
+\begin{quote}
+if-and-only-if the angle \emph{θ} vanishes from discrete time \emph{t}
+onward, i.e. when the pendulum is standing still in inverted position.
+
+Instead of evaluating the innite sum (42), we can also write the
+cost-to-go in the form of a recurrence equation:
+
+\emph{C} (\emph{θt, θt}+1\emph{, · · ·} ) = (1 \emph{−cosθt}) +
+\emph{γC} (\emph{θt}+1\emph{, θt}+2\emph{, · · ·} ) (43)
+
+this so-called Bellman equation is similar to the renormalization
+equation (35), and we can follow the same approach as in section 18 to
+translate this recur-rence equation into a training strategy for a
+feedforward net modeling the cost function. To do so, we rst note that
+future pendulum angles \emph{θt′} depend on the current pendulum angle
+\emph{θt}, the current angular velocity \emph{∆t}, and the currently
+applied acceleration \emph{at}, and we re-write the Bellman equation
+(43) as
+
+\emph{C} (\emph{θt,} ∆\emph{t, at}) = (1 \emph{−cosθt}) + \emph{γC}
+(\emph{θt}+1\emph{,} ∆\emph{t}+1\emph{, at}+1) (44)
+
+We can interpret this equation as a xed-point equation and use it to
+train a feedforward net rendering an approximation \emph{C} (\emph{θ,}
+∆\emph{, a}). This works as fol-lows: rst a discount factor gets
+selected (e.g. \emph{γ} = 0\emph{.}9), and a feedforward net
+approximating \emph{C} (\emph{θ,} ∆\emph{, a})gets initialized. Then the
+following six steps are iterated:
+
+Step 1: Using the feedforward net as estimator for the cost \emph{C},
+for given \emph{θt} and∆\emph{t}, the acceleration \emph{at} is selected
+that minimizes the estimated \emph{C} (\emph{θt,} ∆\emph{t, at}).
+
+Step 2: This acceleration \emph{at} is applied to the cart (i.e.
+inserted in the dierence equation 41).
+
+Step 3: Using the resulting values for \emph{θt}+1 and ∆\emph{t}+1, the
+smallest value for \emph{C} (\emph{θt}+1\emph{,} ∆\emph{t}+1\emph{,
+at}+1) obtainable by varying \emph{at}+1 is determined.
+
+Step 4: This \emph{C}-value gets inserted in the right-hand side of Eq.
+(44), and is used to render an updated target value for \emph{C}
+(\emph{θt,} ∆\emph{t, at}).
+
+Step 5: A stochastic gradient descent update (backpropagation pass) to
+the feedforward net is made using this target value in combination with
+the inputs\emph{θt}, ∆\emph{t}, and \emph{at}.
+
+Step 6: The discrete time \emph{t} is replaced by \emph{t} + 1.
+
+This iteration is continued until convergence to an estimate \emph{C}
+(\emph{θ,} ∆\emph{, a}) is observed that manages to keep \emph{cosθ} at
+values above 0\emph{.}8.
+\end{quote}
+
+46
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: Using the above ideas, create a TD-learning system that,
+start-ing from a situation with \emph{cosθ ≈}1 (a pendulum close to
+upright posi-tion), via self-learning manages to keep \emph{cosθ}
+⩾0\emph{.}8 in Eq. (41). Use the following values: \emph{g} =
+9\emph{.}8m\emph{/}s2, \emph{ℓ}= 1 m\emph{, δt} = 0\emph{.}05 s, and
+limit the ac-celeration \emph{a} to two discrete choices: +\emph{g}
+(accelerate cart to the right) and\emph{−g} (accelerate cart to the
+left). two approximations \emph{C}+ (\emph{θt,} ∆\emph{t}) = \emph{C}
+This translates into the need to create \emph{θt,} ∆\emph{t,} +\uline{1}
+2\emph{g} and \emph{C−}(\emph{θt}+1\emph{,} ∆\emph{t}+1) = \emph{C}
+\emph{θt,} ∆\emph{t, −}\uline{1} 2\emph{g} . For this choice, the
+Bellman equation (44) takes the form
+
+\emph{C±} (\emph{θt,} ∆\emph{t}) = (1 \emph{−cosθt}) + \emph{γMin}
+\emph{C}+ \emph{θ}(\emph{±}) \emph{t}+1\emph{,} ∆(\emph{±}) \emph{, C−}
+\emph{θ}(\emph{±}) \emph{t}+1\emph{,} ∆(\emph{±}) where
+
+the superscript signs (\emph{±}) for the angle \emph{θ} and angular
+velocity ∆at time \emph{t}+1 in-dicate the angle and angular velocity
+reached under the choice of a positive(+) or negative(\emph{−})
+acceleration at time \emph{t}.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+21
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Convolutional nets
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+In section 18 we encountered an example of a renormalization ow: a
+trans-formation of the parameters of a problem which leaves unchanged
+the physical aspects of the problem which are considered of interest. Of
+particular relevance in many branches of physics is the case where this
+transformation reduces the number of parameters required to describe the
+problem. By repeatedly applying such a course-graining renormalization
+transformation, ever simpler descriptions emerge until a minimal
+description is reached that can not be transformed fur-ther. The
+following, rather trivial, example illustrates the concept.
+\end{quote}
+
+Consider a chain of \emph{N} conductors.
+
+\begin{quote}
+It doesn\textquotesingle t matter whether these are
+
+hydraulic conductors or electric conductors. The only thing that matters
+is that the current through the conductors is constant along the chain,
+and that each conductor responds linearly: the current through the
+conductor labeled \emph{i} equals the conductance \emph{σi} of this
+conductor times the driving force across the conductor. We are
+interested in the eective conductance \emph{σtot} accross the whole
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+chain: the ratio of the current through the chain and the total driving
+force across the chain. Of course we all know that solution to this
+problem amounts to calculating the reciprocals of all the conductances
+(the resistances), and simply adding up these numbers. The result is the
+reciprocal of the total conductance: 1 1
+
+prescription that repeatedly merges two subsequent conductances into
+one:\emph{σtot}=\emph{σ}1+ 1\emph{σ}2+\emph{· · ·}+\emph{σN}. We can
+cast this result into a simple renormalization
+\end{quote}
+
+\emph{σ′n}= \emph{f}(\emph{σ}2\emph{n−}1\emph{, σ}2\emph{n})
+
+\begin{quote}
+\emph{xy}\\
+for \emph{n} = 1\emph{,} 2\emph{,} 3\emph{, · · · , ⌊N/}2\emph{⌋}. Here,
+\emph{f}(\emph{x, y}) = renormalization operation, one ultimately
+reaches a system with a single eec-\emph{x}+\emph{y}. By repeatedly
+applying this
+
+tive conductance that equals \emph{σtot}.
+
+What if we don\textquotesingle t know the exact form of
+\emph{f}(\emph{x, y}), but we have access to a large number of data
+triplets \emph{x, y, f}(\emph{x, y})? Obviously, we could train a
+feedforward net based on this data. A small feedforward net that
+incorporates the permutation
+\end{quote}\strut
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.27639in,height=2.31805in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image38.png}
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+47
+
+\begin{quote}
+symmetry applicable to the inputs \emph{x} and \emph{y}, is shown on the
+right. Following training for \emph{x} and \emph{y} values where the
+contrast between the two does not exceed 10, the values for the weights
+\emph{a} = 0\emph{.}214, \emph{b} = \emph{−}0\emph{.}430, and \emph{c} =
+0\emph{.}240 are obtained.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: verify this claim.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+This network needs to be applied repeatedly in order to renormalize
+larger chains of conductors. Such networks that need to get applied
+repeatedly, we will refer to as \textquotesingle kernel
+nets\textquotesingle. The number of inputs of a kernel net is referred
+to as the \textquotesingle kernel size\textquotesingle, and the width of
+the kernel net is referred to as the \textquotesingle lter
+depth\textquotesingle. The kernel net on the right has kernel size 2 and
+lter depth 3. Chains of four conductors can be renormalized to a single
+conductor by hierarchically applying this kernel net three times in
+total (see gure below).
+
+\includegraphics[width=3.19167in,height=4.75833in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image39.png}
+
+For a data set obtained by selecting four input conductances, each
+selected uniformly at random on the interval {[}0\emph{.}1\emph{,} 1),
+we obtain the following crossplot between network-derived conductances
+and exact conductances.
+\end{quote}
+
+48
+
+\begin{quote}
+\includegraphics[width=3.825in,height=3.475in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image40.png}
+
+Note that this result is obtained using no more than three adjustable
+weights (\emph{a}, \emph{b} and \emph{c}). Note also that we
+don\textquotesingle t need to stop at chains of four. Using the same
+three-parameter kernel net as building block, also chains of length
+eight or sixteen (or any power of two) can be renormalized into a single
+conductance.
+
+We can even do better. In the diagram above depicting the
+\emph{σtot}(\emph{σ}1\emph{, σ}2\emph{, σ}3\emph{, σ}4) renormalization
+network, we observe a linear layer that feeds into another linear layer.
+As discussed in section 4, such a double linear layer can be contracted
+into a single linear layer. Below gure shows the result of this
+contraction. The 18 weights of the linear layer on the right-hand side
+can all be expressed in terms of the 12 weights of the double layer on
+the left hand side.30However, the key point to note here is that by
+taking the network architecture on the right as a given, and refraining
+from prescribing any weights, a more powerful renormalization net is
+achieved.
+
+30As discussed in section 4, a matrix multiplication of the weights in
+the double layer yield the weights for the contracted layer.
+\end{quote}
+
+49
+
+\begin{quote}
+\includegraphics[width=3.93889in,height=2.54444in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image41.png}
+
+If we apply the same double-layer contraction to the full hierarchy of
+the con-ductance renormalization network, we notice below repeat network
+architecture emerging.
+
+\includegraphics[width=4.57639in,height=2.66389in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image42.png}
+
+This is the architecture of a convolutional net with kernel size 2 and
+lter depth 3. Here the \textquotesingle lter depth\textquotesingle{} is
+visible as the size of the clusters of ReLU\textquotesingle s, and the
+\textquotesingle kernel size\textquotesingle{} is recognizable as the
+amount of branching between clusters of ReLU\textquotesingle s. Notice
+that following the contraction operation, the repeat unit (or kernel
+net) takes the shape of a layer of 18 multipliers feeding two clusters
+of 3 rectiers into a single cluster of 3 rectiers.
+
+Other values for \textquotesingle kernel size\textquotesingle{} and
+\textquotesingle lter depth\textquotesingle{} are feasible. Below
+diagram depicts the architecture of a convolutional net with kernel size
+3 and lter depth 2. In this diagram, the repeat unit consists of 12
+multipliers.
+\end{quote}
+
+50
+
+\begin{quote}
+\includegraphics[width=4.65278in,height=2.80278in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image43.png}
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: In the above, the renormalization architecture with kernel
+size 2 and lter depth 3 was obtained by repeatedly applying a simple
+kernel net and contracting double layers of multipliers. Which building
+block leads in the same way to the renormalization architecture with
+kernel size 3 and lter depth 2?
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+Next to a number denoting kernel size and a number denoting lter depth,
+renormalization architectures also carry a number denoting the shift
+between applications of the repeat unit within a layer. All
+renormalization architectures depicted above have stride 2: the same
+network unit is repeatedly applied within a layer with shifts over two
+ReLU clusters. A stride of two ensures a factor two reduction in network
+width between subsequent layers.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: Draw the renormalization architecture resulting from a kernel
+size 4, lter depth 1, and stride 2.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+The above renormalization nets are assumed to emerge by hierarchicaly
+re-peating the same kernel net. So the number of independent weights in
+the renormalization net is limited to the number of weights featuring in
+the repeat unit. For kernel size \emph{k} and lter depth \emph{n}, the
+number of weights featuring in the repeat unit equals \emph{n}2\emph{k}.
+Convolutional nets generalize this conceptual framework by applying a
+repeat unit within a layer, while avoiding repeat application of the
+same unit across dierent layers. The result is that each layer can
+incorporate \emph{n}2\emph{k} independent weights.
+
+Eectively, convolutional nets take the shape of deep feedforward nets
+that exploit two fundamental physical features: locality and
+translational invariance. Locality is exploited by utilizing kernels of
+limited size. Translational invariance is exploited by applying the same
+kernel repeatedly across a wide data range.
+\end{quote}
+
+51
+
+\begin{quote}
+Convolutional nets have yielded spectacular successes in many practical
+appli-cations, and they continue to enjoy great popularity among machine
+learning practitioners. The most impressive successes have been obtained
+in applications such as image recognition that involve 2D data
+structures. In the next section we will discuss such higher-dimensional
+convolutional feedforward nets.
+
+22 Review problem 3: hydraulic cross-section
+
+We started section 21 with a 1D data pattern (a chain of conductances),
+and all convolutional net architectures subsequently discussed apply to
+1D patterns
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+of data.
+\end{minipage} &
+\multicolumn{3}{>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.6000} + 4\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+However, the concept of convolutional nets can easily be extended
+\end{minipage}} &
+\multirow{5}{*}{\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\includegraphics[width=1.6875in,height=1.6875in]{vertopal_a4c513063dc5459badc01054b1b787a4/media/image44.png}
+\end{quote}
+\end{minipage}} \\
+\multicolumn{2}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.4000} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+to patterns in higher dimensions (e.g.
+\end{quote}
+\end{minipage}} &
+\multicolumn{2}{>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.4000} + 2\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+2D and 3D). In \emph{d} dimensions, these
+\end{minipage}} \\
+\multicolumn{4}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.8000} + 6\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+architectures are characterized by 2\emph{d} + 1 numbers: a lter depth,
+and for each
+\end{quote}
+\end{minipage}} \\
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.6000} + 4\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+spatial dimension a kernel size and stride.
+\end{quote}
+\end{minipage}} & \begin{minipage}[b]{\linewidth}\raggedright
+A given layer of a convolutional
+\end{minipage} \\
+\multicolumn{4}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.8000} + 6\tabcolsep}}{%
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+net with lter depth \emph{n} and in each of the dimenasions a kernel
+size \emph{k}, is fully characterized by a total of
+\emph{n}2\emph{kd}weights.
+\end{quote}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Exercise: Depict the diagram for a small 2D convolutional net based on
+lter depth 1, kernel size 2 (in both directions) and stride 2 (in both
+directions).
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+on the right) depicts the cross section of a ow channel. Light pixels
+denote We consider the following problem: a binary 2D image (8\emph{×}8
+example shown
+\end{quote}
+\end{minipage}} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+regions open to ow, while dark pixels denote closed regions. Given a
+binary image, the task is to quantify the corresponding laminar ow
+rate.31Here, the ow rate \emph{Q} in SI units is measured in
+\emph{m}3\emph{s−}1, the pressure drop \emph{∆P} over the channel in
+\emph{Pa}, the length \emph{L} of the channel in \emph{m}, and the uid
+viscosity in \emph{Pa·s}. The area \emph{A} of individual pixels in the
+binary image is measured in \emph{m}2. The hydraulic throughput\\
+\emph{S} =\emph{µLQ} (45) \emph{∆P}
+
+represents a geometric parameter (measured in \emph{m}4) that is
+independent of the uid properties or the pressure drop. Given a wide
+variety of binary images with corresponding pixel size \emph{A} and
+hydraulic throughput \emph{S}, can you predict the \emph{S} value for
+novel images with given pixel size \emph{A}?
+
+31Laminar ow is the ow resulting in the creeping-ow limit where the ow
+rates are suciently small so that the non-linear term in the
+Navier-Stokes equation can be ignored.
+\end{quote}
+
+52
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 0\tabcolsep) * \real{1.0000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+Exercise: First, ceate a training set of binary images with accompanying
+\emph{S}-values. These \emph{S}-values can be written as the integral of
+a ow-permeability
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+function \emph{s} over the whole image: \emph{S} =
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\emph{s}(\emph{x, y})\emph{dxdy}.
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+The permeability
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+function \emph{s} can be computed directly by solving the elliptic
+partial dierential equation \emph{−∇}2\emph{s} = 1 on the open pixel
+areas in the binary images. Zero \emph{s}-values for the closed pixels
+provide the boundary conditions. Hint: use a simple (low order)
+discretization, and consider how the pixel area \emph{A} enters into the
+expression for \emph{S}. Don\textquotesingle t go overboard on the image
+size: a rich variety in binary images can be generated using a
+32\emph{×}32 grid (or even a 16\emph{×}16 grid). Give ample
+consideration to the type of variations in the binary images that you
+want to allow. Also, taking into account dimensional homogeneity, decide
+on how to translate the binary image into a grid of values suitable as
+inputs to a feedforward net calculating \emph{S}.
+
+Secondly, create a convolutional feedforward net that translates each
+grid of input values into an \emph{S}-value for the whole image. Hint:
+build convolutional layers that accomplishes a renormalization of the
+images provided where a 2\emph{n×} 2\emph{n}grid is transformed into a
+2\emph{n−}1\emph{×} 2\emph{n−}1grid.
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+23
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+Wrapping up
+\end{quote}
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\begin{quote}
+These notes provide an introduction to state-of-the-art techniques in
+machine learning.Where a trade-o between completeness and depth of
+coverage was needed, preference was given to the latter. This ensured
+that, despite the in-troductory nature of this text, advanced and
+exciting topics such as deep con-volutional nets and reinforcement
+learning via temporal dierence mechanisms could be included. The ip-side
+however, is that many areas of machine learning had to be left out. Most
+notably, the whole text is focused on regression prob-lems where we seek
+a continuous function describing the data. Classication problems have
+not been discussed.
+
+Taking the current text as a starting point, the reader can seek broader
+ML knowledge in various textbooks. Excellent more recent textbooks
+include the books by Abu-Mostafa et al.32, and Murphy33To deepen
+knowledge in feedforward nets and convolutional nets, the book by
+Goodfellow et al.34 is recommended. For more info on reinforcement
+learning the reader is referred to the second edition of the classical
+work by Sutton and Barto.35\\
+Also worth noting are some recent review papers in the scientic
+literature that follow an approach similar to the current text, with the
+aiming to render
+
+32Yaser Abu-Mostafa, Malik Magdon-Ismail, and Hsuan-Tien Lin: Learning
+from Data, AMLBook (2012).
+
+33Kevin P. Murphy: Machine Learning, a Probabilistic Perspective, MIT
+Press (2012). 34Ian Goodfellow, Yoshua Bengio, and Aaron Courville: Deep
+Learning, MIT Press (2016).
+
+35Richard Sutton and Andrew Barto: Reinforcement Learning, MIT Press
+(2018).
+\end{quote}
+
+53
+
+machine learning accessible to scientists and engineers.363738More
+specically,
+
+on the subject of the connection between deep (convolutional) nets and
+renor-
+
+malization methods the reader is referred to recent
+literature.3940414243444546
+
+Choices had to be made in what to discuss and what to leave out from
+this
+
+introductory text. As a result, the important subject of generative
+modeling
+
+and autoencoders has been skipped altogether. For an introductory
+overview,
+
+\begin{quote}
+the reader is referred to Kingma and Welling.47
+
+36Pankaj Mehta, Ching-Hao Wang, Alexandre Day, Clint Richardson, Marin
+Bukov, Charles
+\end{quote}
+
+Fisher, and David Schwab: A high-bias, low-variance introduction to
+Machine Learning for
+
+\begin{quote}
+Physicists (2018), preprint available on arXiv: 1803.08823.
+
+37Osvaldo Simeone: A Brief Introduction to Machine Learning for
+Engineers (2017), preprint
+
+available on arXiv: 1709.02840.
+
+38Giuseppe Carleo, Ignacio Cirac, Kyle Cranmer, Laurent Daudet, Maria
+Schuld, Naftali
+\end{quote}
+
+Tishby, Leslie Vogt-Maranto, and Lenka Zdeborová: Machine learning and
+the physical sci-
+
+\begin{quote}
+ences, Reviews of Modern Physics, Vol 91, (2019). DOI:
+10.1103/RevModPhys.91.045002.
+
+39Maciej Koch-Janusz and Zohar Ringel: Mutual information, neural
+networks
+
+and the renormalization group, Nature Physics, Vol 14, p. 578582 (2018),
+
+https://doi.org/10.1038/s41567-018-0081-4.
+
+40Pankaj Mehta and David Schwab: An exact mapping between the
+Variational Renormal-
+
+ization Group and Deep Learning, arXiv 1410.3831 (2014).
+
+41Alexander Binder, Grégoire Montavon, Sebastian Lapuschkin,
+Klaus-Robert Müller, and
+\end{quote}
+
+Wojciech Samek: Layer-Wise Relevance Propagation for Neural Networks
+with Local Renor-
+
+malization Layers, ICANN 2016, Lecture Notes in Computer Science, vol
+9887, Springer;
+
+\begin{quote}
+preprint available on arXiv: 1604.00825.
+
+42Jason Johnson, Dmitry Malioutov, and Alan Willsky: Lagrangian
+Relaxation for MAP
+\end{quote}
+
+Estimation in Graphical Models, Proceedings of The 45th Allerton
+Conference on Communi-
+
+\begin{quote}
+cation, Control and Computing (2007), preprint available on arXiv
+0710.0013.
+
+43Cédric Bény: Deep learning and the renormalization group, arXiv
+e-prints (2013),
+
+1301.3124.
+
+44Saeed Saremi and Terrence Sejnowski: Hierarchical model of natural im-
+
+ages and the origin of scale invariance, Proceedings of the National
+Academy
+
+of Sciences 110, 3071 (2013),
+http://www.pnas.org/content/110/8/3071.full.pdf, URL
+
+http://www.pnas.org/content/110/8/3071.abstract.
+
+45E. Miles Stoudenmire and David J. Schwab: Supervised Learning With
+Quantum-Inspired
+
+Tensor Networks, arXiv e-prints (2016), 1605.05775.
+
+46Henry Lin, Max Tegmark, and David Rolnick: Why does deep and cheap
+learning work
+
+so well, J Stat Phys 168, p 1223 - 1247 (2017), preprint available on
+arXiv 1608.08225.
+
+47Diederik P. Kingma and Max Welling: An Introduction to Variational
+Autoencoders,
+\end{quote}
+
+Foundations and Trends in Machine Learning: Vol. 12, No. 4, pp 307392
+(2019). DOI:
+
+\begin{quote}
+10.1561/2200000056.
+\end{quote}
+
+54
+
+\end{document}
