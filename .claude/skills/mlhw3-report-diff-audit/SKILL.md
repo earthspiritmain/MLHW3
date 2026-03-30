@@ -74,7 +74,8 @@ Use `report-reviewer` agent logic. Check:
 - [ ] If claiming bonus: `num_params()` output shown, ≤120,000 confirmed
 
 **Rubric E (quality):**
-- [ ] Page limit ≤6 (count columns/pages)
+- [ ] Page limit ≤7 IEEE pages (count columns/pages)
+- [ ] Section lengths are proportional to their score weight (see Page Budget below)
 - [ ] Every figure has axis labels AND caption
 - [ ] Introduction present (problem overview + performance)
 - [ ] Conclusion present (sums up results)
@@ -89,6 +90,23 @@ Use `report-reviewer` agent logic. Check:
 - [ ] Equivariance and invariance used with correct definitions
 - [ ] SI units correct ([m/s], [Pa], [Pa·s], [m²])
 - [ ] Kaggle loss E formula matches assignment3.tex exactly
+
+## Page Budget
+
+The report must stay within **7 IEEE pages** (two-column format). IEEE two-column = ~2 columns per page = 14 columns total.
+
+Reserve ~2 columns for overhead (title, abstract, intro, conclusion, references). That leaves **12 content columns** for sections A–D. Section E is a quality criterion, not a separate section.
+
+Target allocation based on score weight (A:B:C:D = 2:2.5:2.5:2 = 9 rubric points):
+
+| Section | Score | Weight | Target columns | Target pages |
+|---------|-------|--------|---------------|--------------|
+| A | 2/10 | 22% | ~2.7 col | ~1.3 pages |
+| B | 2.5/10 | 28% | ~3.3 col | ~1.7 pages |
+| C | 2.5/10 | 28% | ~3.3 col | ~1.7 pages |
+| D | 2/10 | 22% | ~2.7 col | ~1.3 pages |
+
+**Check each section:** estimate its actual column count (count text blocks + figures), compare to target. Flag any section that is >50% over budget (bloated) or <50% of budget (too thin). A section that is thin but hits all rubric points is acceptable; flag it as a space opportunity.
 
 ## Output format
 
@@ -110,6 +128,18 @@ Use `report-reviewer` agent logic. Check:
 
 ### Figure Issues
 [Missing axis labels or captions — or **None.**]
+
+### Section Length vs Budget
+| Section | Score | Target cols | Estimated cols | Status |
+|---------|-------|-------------|---------------|--------|
+| A | 2/10 | ~2.7 | ? | OVER/OK/THIN |
+| B | 2.5/10 | ~3.3 | ? | OVER/OK/THIN |
+| C | 2.5/10 | ~3.3 | ? | OVER/OK/THIN |
+| D | 2/10 | ~2.7 | ? | OVER/OK/THIN |
+| Overhead (intro/concl/refs) | — | ~2.0 | ? | — |
+| **Total** | — | **≤14** | ? | PASS/FAIL |
+
+Flag OVER if estimated > 1.5× target. Flag THIN if estimated < 0.5× target AND rubric points are missing.
 
 ---
 
