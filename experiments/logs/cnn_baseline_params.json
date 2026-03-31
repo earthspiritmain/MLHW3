@@ -1,0 +1,6 @@
+{
+  "model": "MaskedCNN(create_model(num_channels=16, bias=False))",
+  "total_params": 116321,
+  "bonus_cap": 120000,
+  "bonus_eligible": true
+}
