@@ -22,6 +22,7 @@ Every subagent prompt must instruct the subagent to also read items 1–5 above 
 ## Parse arguments
 
 - **N**: integer (default **5**). Clamp to **3–7**.
+- **scope** (optional): `steps-X-Y` (e.g. `scope=steps-1-4`). When provided, pass `scope=steps-X-Y` to every subagent. Subagents must only audit steps in that range and must NOT flag steps outside the range as missing or incomplete. Adjust the lens rotation descriptions below to focus on what is relevant for the scoped steps only.
 
 ## Execution plan
 
@@ -30,7 +31,9 @@ Every subagent prompt must instruct the subagent to also read items 1–5 above 
 2. Spawn **N parallel subagents**. Each runs `mlhw3-code-diff-audit` with:
    - `Pass ID: k/N`
    - `Lens: [from table below]`
+   - `scope=steps-X-Y` if provided (pass exactly as received)
    - "Follow mlhw3-code-diff-audit output format exactly, including Rating block and Commit Message block."
+   - "Only audit steps within the scope range. Do NOT flag steps outside the scope as missing."
 
    **Lens rotation:**
 

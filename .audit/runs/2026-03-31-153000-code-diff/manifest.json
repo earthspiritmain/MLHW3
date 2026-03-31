@@ -1,0 +1,11 @@
+{
+  "run_id": "2026-03-31-153000-code-diff",
+  "task": "notebook",
+  "audit_kind": "code-diff",
+  "tool": "mlhw3-code-diff-audit-ensemble",
+  "created": "2026-03-31T15:30:00Z",
+  "findings_file": "findings.md",
+  "in_scope_finding_ids": ["C1","C2","C3","C4","C5","C6","C7","C8","C9","C10"],
+  "scope": "steps-1-4",
+  "passes": 5
+}
