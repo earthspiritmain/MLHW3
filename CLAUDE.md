@@ -58,6 +58,15 @@ MLHW3/
 
 ---
 
+## Report Writing Style
+
+- Write in long, dense paragraphs. Do not start a new paragraph or add a `\subsubsection` unless it directly answers a distinct rubric criterion.
+- No italics anywhere (`\textit{}` and `\emph{}` are banned).
+- No bold on words inside paragraphs (`\textbf{}` inside running prose is banned; bold is only permitted for list item labels, e.g. `\item \textbf{...}`).
+- Merge related points into continuous prose rather than bullet lists or short fragments.
+
+---
+
 ## Hard Constraints
 
 1. No numerical PDE solvers, FEM, or analytical solutions as models — feedforward NNs only.

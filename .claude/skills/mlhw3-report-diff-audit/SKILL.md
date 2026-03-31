@@ -82,6 +82,7 @@ Use `report-reviewer` agent logic. Check:
 - [ ] Language is scientific and grammatically correct
 - [ ] Reproducibility: peer could reproduce results from report alone
 - [ ] Bibliography present
+- [ ] No overlapping/redundant content across sections — each concept explained once, in the most appropriate section. Flag if a section fully re-explains something already covered elsewhere (e.g. symmetries defined in A then re-derived in B, loss formula re-stated in C). Cross-references ("as shown in Section A") are fine and encouraged; full re-explanations waste page budget.
 
 **Notation (lecture notes compliance):**
 - [ ] Homogeneous of degree 1: f(λx₁,...,λxₙ) = λ f(x₁,...,xₙ)

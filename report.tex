@@ -5,6 +5,9 @@
 \usepackage{subfig}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{tikz}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -110,10 +113,7 @@ The binary image $I(x_i,y_j)\in\{0,1\}$ is dimensionless. A unique velocity scal
   = \left[\mathrm{m\,s^{-1}}\right].
   \label{eq:v0}
 \end{equation}
-This is the only independent velocity scale constructible from $(\Delta P, L, \mu, \Delta A)$; any other dimensional combination is a power of $v_0$.
-
-\paragraph{Dimensionless learning problem.}
-Normalizing $q$ by $v_0$ yields a dimensionless output $\tilde{q}$:
+This is the only independent velocity scale constructible from $(\Delta P, L, \mu, \Delta A)$; any other dimensional combination is a power of $v_0$. Normalizing $q$ by $v_0$ yields a dimensionless output $\tilde{q}$:
 \begin{equation}
   \tilde{q}(x,y) = \frac{q(x,y)}{v_0}
                  = \frac{q(x,y)\,\mu\, L}{\Delta P\,\Delta A},
@@ -124,10 +124,7 @@ so the learning problem reduces to
   \tilde{q} = \tilde{F}(I),
   \label{eq:dimless-problem}
 \end{equation}
-where $\tilde{F}$ maps a dimensionless binary image to a dimensionless field. All four physical parameters collapse into the single prefactor $v_0$.
-
-\paragraph{Degree-1 homogeneous (scaling) form.}
-A function $f$ is called a \emph{scaling} (degree-1 homogeneous) function if
+where $\tilde{F}$ maps a dimensionless binary image to a dimensionless field. All four physical parameters collapse into the single prefactor $v_0$. A function $f$ is called a scaling (degree-1 homogeneous) function if
 \begin{equation}
   f(\lambda x_1,\dots,\lambda x_n) = \lambda\,f(x_1,\dots,x_n)
   \quad \forall\,\lambda > 0.
@@ -143,12 +140,12 @@ where $S(\cdot)$ is a scaling function\footnote{$S(\cdot)$ here denotes the degr
 
 \subsubsection{Symmetries of the Problem}
 
-A symmetry of the learning problem is a transformation $T$ of the input image that induces a structured, predictable change in the output. Since $q(x,y)$ is a spatially distributed \emph{field}, the correct notion is \textbf{equivariance}: a model $f_\theta$ is equivariant under $T$ if
+A symmetry of the learning problem is a transformation $T$ of the input image that induces a structured, predictable change in the output. Since $q(x,y)$ is a spatially distributed field, the correct notion is \textbf{equivariance}: a model $f_\theta$ is equivariant under $T$ if
 \begin{equation}
   f_\theta(T\cdot I)(x,y) = T\cdot f_\theta(I)(x,y).
   \label{eq:equivariance}
 \end{equation}
-This contrasts with \textbf{invariance}, which applies to scalar outputs that are \emph{unchanged} by $T$. The total flow $Q = \sum_{ij}q(x_i,y_j)\Delta A$ is invariant: $Q(T\cdot I) = Q(I)$.
+This contrasts with \textbf{invariance}, which applies to scalar outputs that are unchanged by $T$. The total flow $Q = \sum_{ij}q(x_i,y_j)\Delta A$ is invariant: $Q(T\cdot I) = Q(I)$.
 
 The $32\times64$ rectangular domain admits the following three symmetries:
 
@@ -158,7 +155,7 @@ The $32\times64$ rectangular domain admits the following three symmetries:
   \item \textbf{180° rotation} $R_{180}$: rotating $I$ by $180°$ maps the rectangular domain onto itself, giving $q(R_{180}\cdot I)(x,y) = R_{180}\cdot q(I)(x,y)$.
 \end{enumerate}
 
-Note that $90°$ rotations are \emph{not} symmetries of this problem: a $90°$-rotated $32\times64$ image becomes a $64\times32$ image, which lies outside the input domain. The three transformations above generate the Klein four-group $\mathbb{Z}_2\times\mathbb{Z}_2$ of order 4 ($R_{180} = T_\mathrm{LR}\circ T_\mathrm{UD}$).
+Note that $90°$ rotations are not symmetries of this problem: a $90°$-rotated $32\times64$ image becomes a $64\times32$ image, which lies outside the input domain. The three transformations above generate the Klein four-group $\mathbb{Z}_2\times\mathbb{Z}_2$ of order 4 ($R_{180} = T_\mathrm{LR}\circ T_\mathrm{UD}$).
 
 \subsubsection{Dataset Characterization}
 
@@ -196,34 +193,28 @@ Key observations: (i) the physical parameters span several orders of magnitude, 
 
 \subsubsection{Loss Functions}
 
-Three loss functions are proposed and evaluated on physical grounds.
-
-\paragraph{L1 -- Kaggle relative error $E$.}
+Three candidate loss functions are assessed on physical grounds. The Kaggle competition metric is the mean relative error
 \begin{equation}
   E = \frac{1}{|\mathcal{D}|}\sum_{i\in\mathcal{D}}
       \frac{1}{N_X N_Y}\sum_{x,y}
-      \left|\frac{q_i^T(x,y)-q_i(x,y)}{q_i^T(x,y)+\varepsilon}\right|.
+      \left|\frac{q_i^T(x,y)-q_i(x,y)}{q_i^T(x,y)+\varepsilon}\right|,
   \label{eq:kaggle-loss}
 \end{equation}
-\textit{Physical assessment.} Dimensionless; $\varepsilon$ prevents division by zero at closed pixels. Each pixel contributes equally in relative terms, which is physically meaningful across the wide range of $v_0$ values. The absolute value makes it non-differentiable at zero residual; $\varepsilon$ introduces an artificial scale below which relative errors are suppressed.
-
-\paragraph{L2 -- Mean squared error (MSE).}
+which is dimensionless; $\varepsilon$ prevents division by zero at closed pixels. Each pixel contributes equally in relative terms, which is physically meaningful across the wide range of $v_0$ values. The absolute value makes it non-differentiable at zero residual, and $\varepsilon$ introduces an artificial scale below which relative errors are suppressed. The mean squared error
 \begin{equation}
   \mathcal{L}_\mathrm{MSE} = \frac{1}{|\mathcal{D}|}\sum_{i}
     \frac{1}{N_X N_Y}\sum_{x,y}
-    \bigl[q_i^T(x,y) - q_i(x,y)\bigr]^2.
+    \bigl[q_i^T(x,y) - q_i(x,y)\bigr]^2
   \label{eq:mse-loss}
 \end{equation}
-\textit{Physical assessment.} Dimensions $[\mathrm{m^2\,s^{-2}}]$; not dimensionless. High-velocity pixels dominate the gradient. Under a global rescaling $q\to\lambda q$, the loss scales as $\lambda^2$, violating degree-1 homogeneity and treating different $v_0$ regimes inconsistently. Differentiable everywhere, simple to optimize.
-
-\paragraph{L3 -- Dimensionless relative MSE.}
+has dimensions $[\mathrm{m^2\,s^{-2}}]$ and is therefore not dimensionless; high-velocity pixels dominate the gradient, and under a global rescaling $q\to\lambda q$ the loss scales as $\lambda^2$, violating degree-1 homogeneity and treating different $v_0$ regimes inconsistently. It is differentiable everywhere and simple to optimize. The dimensionless relative MSE
 \begin{equation}
   \mathcal{L}_\mathrm{rel} = \frac{1}{|\mathcal{D}|}\sum_{i}
     \frac{1}{N_X N_Y}\sum_{x,y}
-    \left(\frac{q_i^T(x,y) - q_i(x,y)}{q_i^T(x,y)+\varepsilon}\right)^2.
+    \left(\frac{q_i^T(x,y) - q_i(x,y)}{q_i^T(x,y)+\varepsilon}\right)^2
   \label{eq:rel-mse-loss}
 \end{equation}
-\textit{Physical assessment.} Dimensionless; invariant under $q\to\lambda q$ (degree-0 homogeneous). Differentiable everywhere, unlike $E$, which facilitates gradient-based optimization. Assigns larger relative penalties to outliers than $E$ due to squaring. The $\varepsilon$ caveat applies as in $E$.
+is invariant under $q\to\lambda q$ (degree-0 homogeneous) and differentiable everywhere, unlike $E$, which facilitates gradient-based optimization; it assigns larger relative penalties to outliers than $E$ due to squaring. The $\varepsilon$ caveat applies as in $E$.
 
 \subsubsection{Symmetry-Penalizing Loss}
 
@@ -247,43 +238,195 @@ where $\mathcal{G} = \{T_\mathrm{LR},\,T_\mathrm{UD},\,R_{180}\}$. This term can
 \end{equation}
 with $\alpha>0$ a hyperparameter. $\mathcal{L}_\mathrm{sym}$ has units $[\mathrm{m^2\,s^{-2}}]$ (consistent with $\mathcal{L}_\mathrm{MSE}$). When the primary loss is the dimensionless Kaggle error $E$, dimensional consistency requires normalizing: replace $\mathcal{L}_\mathrm{sym}$ with $\mathcal{L}_\mathrm{sym}/v_0^2$ so that both terms are dimensionless and $\alpha$ remains a pure number. $\mathcal{L}_\mathrm{sym}$ also serves as a diagnostic metric to compare models trained with and without hardwired symmetries.
 
-\subsection*{B - Content aligned with point B of the rubric/assignment}
+\subsection*{B -- Network Design}
 
-Example of figure, which is referenced as Figure~\ref{fig:example-label}.
+\subsubsection{Data Augmentation and Disambiguation}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=1\linewidth]{fig/example_image.png}
-    \caption{Caption example}
-    \label{fig:example-label}
+The symmetry group $\mathcal{G}=\{e,T_\mathrm{LR},T_\mathrm{UD},R_{180}\}\cong\mathbb{Z}_2\times\mathbb{Z}_2$ identified in Section~A provides a free $4\times$ augmentation: for every training pair $(I_i, q_i)$, the three non-trivial transforms generate valid additional samples
+\begin{equation}
+  (T\cdot I_i,\; T\cdot q_i), \quad T\in\mathcal{G}\setminus\{e\},
+  \label{eq:augmentation}
+\end{equation}
+since the symmetries are equivariances of the ground truth. This inflates $N=1500$ to $N_\mathrm{aug}=6000$ without any additional simulation cost. When $I$ is itself symmetric under some $T$ (e.g.\ left-right symmetric geometry), the augmented pair $(T\cdot I, T\cdot q)$ is identical to the original, so no conflict arises during training. At inference, a model that is not equivariant by design may predict different outputs for $I$ and $T\cdot I$ even when they are the same image. Two strategies address this:
+\begin{enumerate}[noitemsep,topsep=0pt]
+  \item \textbf{Test-time averaging (TTA):} evaluate on all $|\mathcal{G}|=4$ orbit images and average the back-transformed predictions:
+    $\bar{f}(I) = \frac{1}{4}\sum_{T\in\mathcal{G}} T^{-1}\cdot f_\theta(T\cdot I)$.
+  \item \textbf{Canonical form:} map each input to a fixed canonical representative of its orbit before the forward pass.
+\end{enumerate}
+TTA is preferred: it reduces prediction variance for all inputs, not only symmetric ones, and requires no modification of the training pipeline.
+
+\subsubsection{CNN / VGG Design}
+
+A VGG-like architecture maps the binary input $I\in\{0,1\}^{32\times64}$ and the scalar $v_0 = \Delta P\Delta A/(\mu L)$ to the field $q\in\mathbb{R}^{32\times64}$ (Figure~\ref{fig:vgg-arch}). The encoder uses three convolutional blocks each containing two $3\times3$ convolutions followed by $2\times2$ max-pooling, with a fully connected decoder:
+
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Stage & Layers & Spatial size & Ch.\ \\
+\midrule
+Input    & --               & $32\times64$ & 1   \\
+Block 1  & Conv3$\times$2, Pool2 & $16\times32$ & 32  \\
+Block 2  & Conv3$\times$2, Pool2 & $8\times16$  & 64  \\
+Block 3  & Conv3$\times$2, Pool2 & $4\times8$   & 128 \\
+Bottleneck & Flatten, FC(512), concat $v_0$ & -- & -- \\
+Decoder  & FC(2048), reshape & $32\times64$ & 1   \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The receptive field of each layer is computed using $\mathrm{RF}_\ell = \mathrm{RF}_{\ell-1} + (k-1)J_{\ell-1}$, $J_\ell = J_{\ell-1}s_\ell$, with $\mathrm{RF}_0=1$ and $J_0=1$:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Layer & RF & $J$ \\
+\midrule
+Conv3 (B1) &  3 & 1 \\
+Conv3 (B1) &  5 & 1 \\
+Pool2 (B1) &  6 & 2 \\
+Conv3 (B2) & 10 & 2 \\
+Conv3 (B2) & 14 & 2 \\
+Pool2 (B2) & 16 & 4 \\
+Conv3 (B3) & 24 & 4 \\
+Conv3 (B3) & 32 & 4 \\
+Pool2 (B3) & 36 & 8 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+After three blocks the receptive field reaches $36\times36$, covering the full $32$-pixel height; the FC decoder covers the full $64$-pixel width. The main limitations are: (i) the FC decoder discards all spatial structure and must reconstruct it from a compressed vector; (ii) parameter count is dominated by the FC layers ($4{\times}8{\times}128{\times}512\approx2{\times}10^6$ for FC(512) and $512{\times}2048\approx10^6$ for the decoder, totalling $\approx3{\times}10^6$ FC parameters); (iii) convolutional layers are translation-equivariant but not $\mathbb{Z}_2\times\mathbb{Z}_2$-equivariant without explicit symmetry hardwiring.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\tiny,
+  enc/.style={draw,rounded corners=1pt,minimum width=5em,minimum height=1.4em,
+              align=center,fill=blue!10},
+  fc/.style={draw,rounded corners=1pt,minimum width=5em,minimum height=1.4em,
+             align=center,fill=yellow!15},
+  io/.style={draw,rounded corners=1pt,minimum width=5em,minimum height=1.4em,
+             align=center,fill=green!15},
+  arr/.style={->}
+]
+\node[io]  (inp) at (0,0)     {Input\\$32{\times}64$};
+\node[enc] (b1)  at (0,-0.9)  {B1, 32ch\\$16{\times}32$};
+\node[enc] (b2)  at (0,-1.8)  {B2, 64ch\\$8{\times}16$};
+\node[enc] (b3)  at (0,-2.7)  {B3, 128ch\\$4{\times}8$};
+\node[fc]  (fc1) at (3.2,-2.7){FC(512)\\$\oplus\,v_0$};
+\node[fc]  (fc2) at (3.2,-1.8){FC(2048)};
+\node[io]  (out) at (3.2,-0.9){Output\\$32{\times}64$};
+\draw[arr] (inp)--(b1); \draw[arr] (b1)--(b2); \draw[arr] (b2)--(b3);
+\draw[arr] (b3)--(fc1);
+\draw[arr] (fc1)--(fc2); \draw[arr] (fc2)--(out);
+\end{tikzpicture}
+\caption{VGG encoder--decoder block diagram. Each block B$k$ contains two $3{\times}3$ Conv--ReLU layers followed by $2{\times}2$ max-pooling. After flattening, the feature vector is concatenated with the velocity scale $v_0$ before the FC decoder.}
+\label{fig:vgg-arch}
 \end{figure}
 
+\subsubsection{Fully Convolutional Network}
 
-Example of a subfigure, which elements are referenced as Figure~\ref{fig:first_case} and \ref{fig:full_sub_fig}
+A fully convolutional (FC-NN) design replaces the flatten and FC decoder with transposed convolutions or bilinear upsampling (Figure~\ref{fig:fcnn-arch}). The scalar $v_0$ is injected as a spatially broadcast feature map at the bottleneck. All layers are spatial, so the network is spatially equivariant throughout and requires far fewer parameters than VGG owing to the absence of large FC layers; output resolution is also adjustable at test time. Without skip connections, however, the bottleneck is the only pathway for spatial information: fine-grained features (e.g.\ sharp zero boundaries at $I=0$) are compressed into a $4\times8$ feature map and must be fully recovered by upsampling alone. Transposed convolutions introduce checkerboard artifacts unless carefully initialized, and performance is typically inferior to U-Net at equivalent parameter counts.
 
-\begin{figure}[h]
-    \centering
-    \subfloat[Subcaption example]{\includegraphics[width=0.49\linewidth]{fig/example_subfig_1.png}%
-    \label{fig:first_case}}
-    \hfil
-    \subfloat[Subcaption example]{\includegraphics[width=0.49\linewidth]{fig/example_subfig_2.png}%
-    \label{fig:second_case}}
-    \caption{Full caption example.}
-    \label{fig:full_sub_fig}
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\tiny,
+  blk/.style={draw,rounded corners=1pt,minimum width=7em,minimum height=1.4em,
+              align=center,fill=blue!10},
+  bnk/.style={draw,rounded corners=1pt,minimum width=7em,minimum height=1.4em,
+              align=center,fill=orange!20},
+  io/.style={draw,rounded corners=1pt,minimum width=7em,minimum height=1.4em,
+             align=center,fill=green!15},
+  arr/.style={->}
+]
+\node[io]  (inp) at (0,0)    {Input $32{\times}64$, 1ch};
+\node[blk] (enc) at (0,-0.9) {Encoder (3 blocks)\\32/64/128ch, $4{\times}8$};
+\node[bnk] (bn)  at (0,-1.8) {BN, 256ch, $4{\times}8$\\$\oplus\,v_0$};
+\node[blk] (dec) at (0,-2.7) {Decoder (3 blocks)\\128/64/32ch, $32{\times}64$};
+\node[io]  (out) at (0,-3.6) {Output $32{\times}64$, 1ch};
+\draw[arr] (inp)--(enc); \draw[arr] (enc)--(bn);
+\draw[arr] (bn)--(dec);  \draw[arr] (dec)--(out);
+\end{tikzpicture}
+\caption{Fully convolutional encoder--decoder. No skip connections: all spatial information must pass through the $4{\times}8$ bottleneck. The scalar $v_0$ is broadcast-injected as an additional feature channel at the bottleneck.}
+\label{fig:fcnn-arch}
 \end{figure}
 
-Alternatively display the same figures spanning across the two text columns as in Figure~\ref{fig:full_sub_fig_alt}
+\subsubsection{U-Net}
 
-\begin{figure*}[h]
-    \centering
-    \subfloat[Subcaption example]{\includegraphics[width=0.49\linewidth]{fig/example_subfig_1.png}%
-    \label{fig:first_case_alt}}
-    \hfil
-    \subfloat[Subcaption example]{\includegraphics[width=0.49\linewidth]{fig/example_subfig_2.png}%
-    \label{fig:second_case_alt}}
-    \caption{Full caption example.}
-    \label{fig:full_sub_fig_alt}
-\end{figure*}
+A U-Net adds skip connections that concatenate encoder feature maps to the corresponding decoder maps at each resolution (Figure~\ref{fig:unet-arch}):
+\begin{equation}
+  h_\ell^\mathrm{dec} = \mathrm{Conv}\!\bigl([\,h_\ell^\mathrm{enc}\;\Vert\;h_\ell^\mathrm{up}\,]\bigr),
+  \label{eq:skip}
+\end{equation}
+where $\Vert$ denotes channel-wise concatenation and $h_\ell^\mathrm{up}$ is the upsampled feature from the level below. Schematically:
+\[
+E_1\!\to\!E_2\!\to\!E_3 \;\xrightarrow{\mathrm{bottleneck}}\; D_3\!\leftarrow\!D_2\!\leftarrow\!D_1,
+\quad E_\ell\!\xrightarrow{\mathrm{skip}}\!D_\ell.
+\]
+
+Skip connections preserve high-frequency spatial detail (including the sharp $q=0$ boundary at closed pixels) without the decoder needing to re-learn it from compressed bottleneck features; the decoder can therefore be shallow, reducing total parameter count. U-Net is the most parameter-efficient architecture for this image-to-image task: at fixed prediction quality it achieves lower parameter count than VGG or FC-NN because skip connections offload reconstruction work from trainable weights to direct feature reuse. The design is however fixed to matching input/output spatial sizes ($32\times64$, satisfied here), and the scalar $v_0$ must be injected and propagated to all decoder levels.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\tiny,
+  enc/.style={draw,rounded corners=1pt,minimum width=5em,minimum height=1.3em,
+              align=center,fill=blue!10},
+  dec/.style={draw,rounded corners=1pt,minimum width=5em,minimum height=1.3em,
+              align=center,fill=cyan!15},
+  bnk/.style={draw,rounded corners=1pt,minimum width=5em,minimum height=1.3em,
+              align=center,fill=orange!20},
+  io/.style={draw,rounded corners=1pt,minimum width=5em,minimum height=1.3em,
+             align=center,fill=green!15},
+  arr/.style={->},
+  sk/.style={->,dashed,color=red!60!black}
+]
+\node[io]  (inp) at (0,0)      {Input $32{\times}64$};
+\node[enc] (e1)  at (0,-0.80)  {E1, 32ch, $16{\times}32$};
+\node[enc] (e2)  at (0,-1.60)  {E2, 64ch, $8{\times}16$};
+\node[enc] (e3)  at (0,-2.40)  {E3, 128ch, $4{\times}8$};
+\node[bnk] (bn)  at (1.6,-3.20){BN $\oplus v_0$};
+\node[dec] (d3)  at (3.2,-2.40){D3, 128ch, $4{\times}8$};
+\node[dec] (d2)  at (3.2,-1.60){D2, 64ch, $8{\times}16$};
+\node[dec] (d1)  at (3.2,-0.80){D1, 32ch, $16{\times}32$};
+\node[io]  (out) at (3.2,0)    {Output $32{\times}64$};
+\draw[arr] (inp)--(e1); \draw[arr] (e1)--(e2); \draw[arr] (e2)--(e3); \draw[arr] (e3)--(bn);
+\draw[arr] (bn)--(d3);
+\draw[arr] (d3)--(d2); \draw[arr] (d2)--(d1); \draw[arr] (d1)--(out);
+\draw[sk]  (e1)--(d1);
+\draw[sk]  (e2)--(d2);
+\draw[sk]  (e3)--(d3);
+\end{tikzpicture}
+\caption{U-Net architecture. Skip connections (dashed red) concatenate encoder maps directly to decoder maps at matching resolution, preserving fine spatial detail. The bottleneck also receives $v_0$.}
+\label{fig:unet-arch}
+\end{figure}
+
+\subsubsection{Hardwiring Symmetries}
+
+Let $\mathcal{G}$ act on inputs by $T\cdot I$ and on outputs by $T\cdot q$. The Reynolds operator converts any function $f_\theta$ into an exactly equivariant one:
+\begin{equation}
+  \bar{f}(I) = \frac{1}{|\mathcal{G}|}\sum_{T\in\mathcal{G}} T^{-1}\cdot f_\theta(T\cdot I).
+  \label{eq:reynolds}
+\end{equation}
+Equivariance follows immediately: $\bar{f}(S\cdot I)=S\cdot\bar{f}(I)$ for all $S\in\mathcal{G}$, by substituting $T'=TS^{-1}$. For VGG and FC-NN, wrapping either model with \eqref{eq:reynolds} requires four forward passes on the orbit images and averages the back-transformed outputs; the base parameters are unchanged and exact $\mathbb{Z}_2\times\mathbb{Z}_2$ equivariance is enforced at the cost of $4\times$ inference time. For U-Net, \eqref{eq:reynolds} can be applied at the network level in the same way, or alternatively group-equivariant convolutions \cite{cohen2016group} can be used: filters are constrained so that the response to $T\cdot I$ equals $T$ acting on the filter bank of $I$. For our Klein group each learnable filter generates three additional filters $\{T_\mathrm{LR}w, T_\mathrm{UD}w, R_{180}w\}$ by symmetry, reducing the free-parameter count by up to $4\times$ while guaranteeing equivariance throughout every layer, including skip connections.
+
+\subsubsection{Non-Physical Outputs and Prevention}
+
+Two categories of non-physical output can arise:
+\begin{enumerate}[noitemsep,topsep=0pt]
+  \item \textbf{Flow at closed pixels.} A network may predict $q(x,y)>0$ where $I(x,y)=0$, violating impenetrability. Hard masking — multiplying the raw output by the binary mask:
+    \begin{equation}
+      \hat{q} = f_\theta(I,v_0)\odot I,
+      \label{eq:masking}
+    \end{equation}
+    is a differentiable, zero-parameter constraint that guarantees $\hat{q}=0$ at all closed pixels.
+  \item \textbf{Negative flow values.} Pressure-driven unidirectional flow requires $q\ge0$. Applying $\mathrm{Softplus}(x)=\ln(1+e^x)$ after the mask:
+    \begin{equation}
+      \hat{q} = \mathrm{Softplus}\!\bigl(f_\theta(I,v_0)\bigr)\odot I
+      \label{eq:nonneg}
+    \end{equation}
+    ensures non-negativity.
+\end{enumerate}
+Combining both ensures $\hat{q}\ge0$ and $\hat{q}=0$ at $I=0$ by construction, without any additional parameters. Across the three architectures, VGG is least parameter-efficient because the FC decoder dominates parameter count ($\approx3\times10^6$ FC parameters regardless of prediction depth) and convolutional layers are translation-equivariant only; symmetry hardwiring via~\eqref{eq:reynolds} adds no parameters but costs $4\times$ inference time. A fully convolutional NN eliminates the FC layers and is spatially equivariant throughout at substantially lower parameter count, though without skip connections fine spatial detail must still pass through the bottleneck. U-Net with group-equivariant convolutions is the most efficient: skip connections bypass the bottleneck for high-frequency detail allowing a shallow decoder, and group-equivariant convolutions embed exact $\mathcal{G}$-equivariance at every layer with up to $4\times$ fewer free parameters than standard convolutions, at no inference-time overhead.
 
 Bibliography references use instead the \texttt{\\cite} keyword, e.g. \cite{IEEEhowto:kopka}.
 
@@ -346,11 +489,15 @@ Always sum up your message and results in a concluding section.
 % <OR> manually copy in the resultant .bbl file
 % set second argument of \begin to the number of references
 % (used to reserve space for the reference number labels box)
-\begin{thebibliography}{1}
+\begin{thebibliography}{2}
 
 \bibitem{IEEEhowto:kopka}
 H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
   0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+
+\bibitem{cohen2016group}
+T.~Cohen and M.~Welling, ``Group equivariant convolutional networks,''
+  in \emph{Proc.\ ICML}, 2016, pp.\ 2990--2999.
 
 \end{thebibliography}
 

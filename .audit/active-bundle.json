@@ -1,8 +1,7 @@
 {
-  "_comment": "Updated by /mlhw3-report-diff-audit-ensemble or /mlhw3-code-diff-audit-ensemble after each run",
-  "bundle_path": null,
-  "run_id": null,
-  "audit_kind": null,
-  "tool": null,
-  "created": null
+  "bundle_path": ".audit/runs/2026-03-31-070045-code-diff",
+  "run_id": "2026-03-31-070045-code-diff",
+  "audit_kind": "code-diff",
+  "tool": "mlhw3-code-diff-audit-ensemble",
+  "created": "2026-03-31T07:00:45Z"
 }
