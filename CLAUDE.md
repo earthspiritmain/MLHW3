@@ -13,6 +13,7 @@ Deliverables: `assignment3.tex` (PDF report, ≤6 pages, IEEE template) + `assig
 3. **Step-by-step coding order** — see `docs/coding-workflow.md`.
 4. **No code before planning** for non-trivial components. Create `dev/active/<task>/` first, audit with `/mlhw3-plan-audit`, then implement.
 5. **Parameter count ≤ 120,000** for the 0.5/10 bonus. Flag if exceeded; do not actively loop-check.
+6. **Part D has no written report section.** Kaggle score is auto-graded. The only written evidence needed is the `num_params()` per-layer output (for the bonus) — fold it into Section C's parameter efficiency discussion, not a separate section.
 
 ---
 
@@ -64,6 +65,32 @@ MLHW3/
 - No italics anywhere (`\textit{}` and `\emph{}` are banned).
 - No bold on words inside paragraphs (`\textbf{}` inside running prose is banned; bold is only permitted for list item labels, e.g. `\item \textbf{...}`).
 - Merge related points into continuous prose rather than bullet lists or short fragments.
+
+---
+
+## Plot / Figure Rules
+
+**One plot = one rubric point. No decorative plots.**
+
+Before adding any new plot, ask: which specific rubric sub-point does this satisfy that no existing plot already covers? If the answer is none, do not add it.
+
+**Consolidation rules (apply at all times):**
+- Multiple related series → same axes with a legend, not side-by-side subplots. E.g. plain CNN val vs GroupAvg val on one axes, not two subplots.
+- Multiple related histograms or scatter plots for the same step → one multi-panel figure (max 3 panels wide), not separate figures.
+- Never generate an individual training loss curve for a model if a comparison plot already shows that model's curve. Use `save_plot=False` in `train_model()` for non-baseline runs.
+- Never re-plot data that was already plotted in an earlier cell just to add annotations — modify the original cell instead.
+- Cross-section + flow field examples: max 3 sample rows (not 6).
+
+**Current approved figures (do not add more without justification):**
+1. Cross-sections + flow fields — 3×2 grid (rubric A.3)
+2. Physical parameter distributions — 2×2 histograms (rubric A.3)
+3. Flow stats + porosity — 1×3 (nonzero q / porosity hist / porosity vs Q) (rubric A.3)
+4. Dimensional analysis — 1×2 (π₂ CV / q/v₀ histogram) (rubric A.1)
+5. Augmentation verification — 2×4 (rubric B.1)
+6. Baseline training curve — 1 auto-plot from `train_model()` (rubric C.2)
+7. Prediction visualisation — n×4 panels (rubric C.1)
+8. Combined C.3+C.4 figure — 1×3 (L2 comparison / sym val comparison / SV bars) (rubric C.3+C.4)
+9. Step 11 param efficiency — 1×2 (val loss curves all 3 models / param count scatter) saved as `step11_reg_comparison.png` (rubric C.5)
 
 ---
 

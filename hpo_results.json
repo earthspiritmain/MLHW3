@@ -1,0 +1,15 @@
+{
+  "best_val_E": 0.003236572646225492,
+  "best_params": {
+    "C": 12,
+    "lr": 0.0041549324409165065,
+    "weight_decay": 4.0234933894050666e-06,
+    "batch_size": 16
+  },
+  "n_params": 66697,
+  "under_120k": true,
+  "n_trials_total": 22,
+  "n_trials_complete": 18,
+  "n_trials_pruned": 4,
+  "elapsed_seconds": 4761
+}

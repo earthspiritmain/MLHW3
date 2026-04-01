@@ -14,7 +14,7 @@ Each step = one approval cycle: explain → student says go → implement → ve
 8. **Evaluation and plotting** — loss curves saved to `experiments/plots/`; prediction visualizations
 9. **Overfitting prevention** — implement and demonstrate at least one strategy
 10. **Symmetry enforcement** — adapt `GroupAvgModel` from lab7 for 32×64; compare with/without
-11. **U-Net design** — design, implement, compare parameter efficiency vs CNN
+11. **U-Net design** — design and implement two variants: 1-conv U-Net (C=16, ~58k params) and 2-conv U-Net (C=16, ~118k params). Compare all three models (CNN, UNet1, UNet2) in a single 1×2 figure (val loss curves + param scatter). Both UNet training runs use `save_plot=False`; combined figure is the report figure.
 12. **Parameter count** — run `num_params()`; verify ≤120,000 for bonus
 13. **Kaggle submission** — run `/mlhw3-kaggle-submit`
 
